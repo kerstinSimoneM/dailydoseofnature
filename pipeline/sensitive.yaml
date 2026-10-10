@@ -1,0 +1,9 @@
+# Curated stable GBIF taxonKeys excluded from all public targets and location hints.
+# Populate and review against current German Red Lists before producing a real pack.
+taxon_keys: []
+groups:
+  - red-list breeders
+  - owls
+  - raptors
+  - black stork
+  - bats at roosts

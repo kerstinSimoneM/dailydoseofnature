@@ -1,0 +1,17 @@
+grid:
+  h3_resolution: 8
+  parent_resolution: 7
+effort:
+  temporal_kappa: 10
+  spatial_kappa: 20
+  low_confidence_support: 30
+  low_effort_cell_records: 20
+mission:
+  walk_fraction: 0.6
+  pace_m_per_minute: 75
+  detour_factor: 1.35
+weather:
+  snow_frost_temperature_c: 0
+  heavy_rain_mm_per_hour: 2.5
+  light_rain_mm_per_hour: 0.1
+  overcast_cloud_cover_percent: 60

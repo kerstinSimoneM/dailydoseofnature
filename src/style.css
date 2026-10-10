@@ -1,0 +1,255 @@
+:root {
+  font-family: 'DM Sans', sans-serif;
+  color: #233b2d;
+  background: #f4f0e6;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --ink: #233b2d;
+  --deep: #315b43;
+  --moss: #577450;
+  --leaf: #829766;
+  --pale: #e9eddf;
+  --paper: #fbf9f2;
+  --sun: #e6aa53;
+  --muted: #788174;
+  --line: #e7e5d9;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .6; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #d69f47; outline-offset: 3px; }
+.app-shell { min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+.topbar { height: 76px; padding: 0 max(calc((100vw - 1230px) / 2), 5.4vw); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(49,91,67,.11); }
+.brand { display: inline-flex; align-items: center; gap: 11px; padding: 0; border: 0; background: none; color: var(--ink); font-size: 14px; letter-spacing: -.3px; font-weight: 700; }
+.brand i { font-family: Fraunces, Georgia, serif; font-weight: 500; }
+.brand-mark { width: 35px; height: 35px; display: grid; place-items: center; border-radius: 12px; background: var(--deep); color: #edf0dd; }
+.top-actions { display: flex; align-items: center; gap: 20px; }
+.offline-indicator, .footer-lock { display: flex; align-items: center; gap: 7px; color: #697466; font-size: 11px; font-weight: 500; }
+.status-dot { display: inline-block; flex: 0 0 auto; width: 7px; height: 7px; border-radius: 50%; background: #7f9b60; box-shadow: 0 0 0 3px #e4eadb; }
+.language-select { position: relative; display: flex; align-items: center; }
+.language-select select { appearance: none; border: 0; background: transparent; color: var(--deep); font-size: 11px; font-weight: 700; padding: 9px 18px 9px 5px; cursor: pointer; }
+.language-select svg { position: absolute; right: 0; pointer-events: none; }
+.icon-button { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 50%; color: var(--deep); background: #f9f7ef; }
+.main-content { flex: 1; width: 100%; max-width: 1230px; margin: 0 auto; padding: 54px 38px 76px; }
+.plan-layout { display: grid; grid-template-columns: minmax(360px, .94fr) minmax(440px, 1.06fr); gap: 72px; align-items: center; }
+.intro-column { position: relative; align-self: stretch; display: flex; flex-direction: column; justify-content: center; padding-bottom: 34px; }
+.mini-label, .eyebrow { color: #7a846d; font-size: 10px; font-weight: 700; letter-spacing: 1.35px; text-transform: uppercase; }
+.mini-label { display: flex; align-items: center; gap: 9px; margin-bottom: 25px; }
+.leaf-dot { color: #8b9e64; font-size: 16px; }
+h1, h2, h3, p { margin-top: 0; }
+.intro-column h1, .mission-banner h1, .simple-heading h1 { white-space: pre-line; margin: 0; color: var(--deep); font: 500 clamp(45px, 5.5vw, 68px)/1.04 Fraunces, Georgia, serif; letter-spacing: -2.4px; }
+.intro-copy { max-width: 390px; margin: 21px 0 29px; color: #70796d; font-size: 15px; line-height: 1.8; }
+.intro-note { display: flex; align-items: flex-start; max-width: 390px; gap: 12px; }
+.intro-note p { margin: 0; max-width: 350px; color: #62705f; font: 400 13px/1.75 Fraunces, Georgia, serif; }
+.note-icon { flex: 0 0 37px; display: grid; place-items: center; width: 37px; height: 37px; border-radius: 50%; color: #73865d; background: #e8ebdd; }
+.little-illustration { position: relative; height: 224px; margin: 27px 12px 0 0; border-radius: 48% 52% 12% 18% / 45% 40% 10% 12%; overflow: hidden; background: linear-gradient(160deg, #e6eddc 0%, #dfe8d1 58%, #d1dfc1 100%); }
+.sun-disc { position: absolute; top: 31px; right: 24%; width: 73px; height: 73px; border-radius: 50%; background: #f3dca9; opacity: .85; }
+.hill { position: absolute; bottom: -51px; border-radius: 50%; }
+.hill-back { left: -5%; width: 76%; height: 140px; background: #a7bb8e; transform: rotate(-9deg); }
+.hill-front { right: -13%; width: 80%; height: 130px; background: #83996c; transform: rotate(8deg); }
+.illustration-tree { position: absolute; z-index: 2; font-size: 66px; filter: saturate(.78); }
+.tree-left { bottom: 36px; left: 17%; }
+.tree-right { bottom: 40px; right: 14%; font-size: 75px; }
+.illustration-flower { position: absolute; z-index: 3; left: 50%; bottom: 23px; font-size: 29px; }
+.illustration-bird { position: absolute; z-index: 2; top: 38px; left: 40%; font-size: 25px; transform: rotate(-8deg); }
+.illustration-caption { position: absolute; z-index: 4; bottom: 16px; left: 18px; color: #fbf9f2; font: italic 11px Fraunces, Georgia, serif; }
+.plan-card { padding: 28px 30px 22px; border: 1px solid #e9e6db; border-radius: 19px; background: #fcfaf4; box-shadow: 0 12px 44px rgba(52,69,47,.06); }
+.card-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.card-heading h2 { margin: 6px 0 0; font: 500 26px Fraunces, Georgia, serif; color: var(--deep); letter-spacing: -.55px; }
+.card-stamp { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; color: #7c8d64; background: #eef0e4; }
+.location-display { display: flex; align-items: center; gap: 11px; padding: 12px 0 14px; border-top: 1px solid var(--line); }
+.location-icon { flex: 0 0 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; color: var(--deep); background: #edf0e5; }
+.location-display > div:nth-child(2) { min-width: 0; flex: 1; }
+.location-display strong, .location-display small { display: block; }
+.location-display strong { font-size: 12px; }
+.location-display small { margin-top: 3px; color: #868b7c; font-size: 10px; }
+.text-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 6px; border: 0; background: transparent; color: #55764f; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.inline-message { display: flex; gap: 8px; margin: 0 0 11px; padding: 9px 11px; border-radius: 8px; background: #f4ecdb; color: #6a593c; font-size: 11px; line-height: 1.5; }
+.picker-heading { display: flex; align-items: center; justify-content: space-between; color: #67705e; font-size: 10px; font-weight: 600; }
+.tiny-caption { color: #a0a494; font-size: 9px; font-weight: 400; }
+.offline-map { height: 158px; position: relative; isolation: isolate; margin-top: 8px; border-radius: 12px; overflow: hidden; background: #ecf0e5; }
+.map-land { position: absolute; z-index: -2; width: 100%; height: 100%; inset: 0; }
+.map-land path { fill: #dce6cf; stroke: #c6d5b8; stroke-width: 2; }
+.map-river { position: absolute; z-index: -1; width: 160%; height: 16px; border-radius: 50%; background: #c2d9d9; opacity: .85; transform: rotate(-24deg); }
+.river-one { top: 45%; left: -15%; }
+.river-two { top: 59%; left: 4%; width: 105%; height: 8px; transform: rotate(11deg); }
+.hex-cell { position: absolute; width: 34px; height: 37px; transform: translate(-50%,-50%); display: grid; place-items: center; border: 1px solid rgba(106,132,92,.48); background: rgba(250,249,241,.58); color: #728760; clip-path: polygon(25% 4%,75% 4%,100% 50%,75% 96%,25% 96%,0% 50%); font-size: 18px; transition: .16s ease; }
+.hex-cell:hover, .hex-cell.is-selected { z-index: 2; width: 40px; height: 43px; background: #56764b; color: #fff9e7; }
+.map-label { position: absolute; color: #9aa18f; font-size: 7px; letter-spacing: .6px; font-weight: 600; }
+.label-west { left: 13%; top: 47%; }.label-east { right: 9%; top: 34%; }.label-south { left: 41%; bottom: 11%; }
+.privacy-note { display: flex; align-items: center; gap: 7px; margin: 9px 0 13px; color: #77846a; font-size: 9px; }
+.form-divider { height: 1px; background: var(--line); margin: 0 0 14px; }
+.setting-row, .weather-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+.setting-row > div:first-child { display: grid; gap: 4px; }
+.setting-hint { color: #929587; font-size: 9px; }
+.number-input { display: flex; align-items: center; gap: 6px; padding: 2px 9px; border: 1px solid #e4e3d8; border-radius: 9px; color: #67775b; background: #f8f7ef; }
+.number-input input { width: 38px; padding: 6px 0; border: 0; outline: 0; background: transparent; color: var(--ink); text-align: right; font-size: 13px; font-weight: 700; }
+.number-input input::-webkit-inner-spin-button { appearance: none; }
+.number-input span { font-size: 10px; }
+.weather-select { position: relative; display: flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid #e4e3d8; border-radius: 9px; color: #69785c; background: #f8f7ef; font-size: 10px; }
+.weather-select > span { display: flex; align-items: center; gap: 7px; }
+.weather-select select { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
+.primary-button { display: flex; width: 100%; justify-content: space-between; align-items: center; padding: 14px 16px; border: 0; border-radius: 11px; background: #315b43; color: #faf8ec; font-size: 12px; font-weight: 600; box-shadow: 0 5px 12px rgba(49,91,67,.13); transition: background .15s, transform .15s; }
+.primary-button:hover { background: #274b37; transform: translateY(-1px); }
+.starter-note { margin: 10px 0 0; color: #9a9d8d; text-align: center; font-size: 9px; line-height: 1.5; }
+.footer { display: flex; align-items: center; justify-content: space-between; min-height: 57px; padding: 0 max(calc((100vw - 1230px) / 2), 5.4vw); border-top: 1px solid rgba(49,91,67,.11); color: #899080; font-size: 10px; }
+.footer-left, .footer-links { display: flex; align-items: center; gap: 16px; }
+.footer-leaf { color: #829766; font-size: 16px; }
+.footer-links { gap: 19px; }
+.footer-links button { padding: 5px 0; border: 0; background: transparent; color: #747f6c; font-size: 10px; }
+.footer-lock { font-size: 9px; }
+.mission-page, .simple-page { max-width: 990px; margin: 0 auto; }
+.back-link { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 24px; padding: 5px 0; border: 0; background: none; color: #687763; font-size: 11px; }
+.mission-banner { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 30px; padding: 0 0 24px; border-bottom: 1px solid #e3e4d7; }
+.mission-banner h1 { margin-top: 8px; font-size: 52px; }
+.mission-banner p { margin: 11px 0 0; color: #7d8775; font: 15px Fraunces, Georgia, serif; }
+.banner-flower { margin-left: 4px; color: #b7a76e; font-size: 20px; }
+.route-stamp { display: grid; justify-items: center; min-width: 86px; padding: 13px 17px; border-radius: 15px; background: #e7eddd; color: #577450; }
+.route-stamp span { margin-top: 7px; font-size: 11px; }.route-stamp strong { margin-top: 1px; font: 500 20px Fraunces, Georgia, serif; }
+.mission-grid { display: grid; grid-template-columns: minmax(0, 1fr) 255px; gap: 35px; }
+.mission-main { min-width: 0; }
+.destination-card { padding: 23px 24px 20px; border-radius: 16px; background: #fcfaf4; box-shadow: 0 5px 24px rgba(52,69,47,.05); }
+.destination-top { display: flex; align-items: center; justify-content: space-between; }
+.tag { display: flex; align-items: center; gap: 6px; color: #69805a; font-size: 9px; font-weight: 600; }
+.destination-card h2 { margin: 12px 0 2px; color: var(--deep); font: 500 29px Fraunces, Georgia, serif; }
+.destination-habitat { margin: 0; color: #83887a; font-size: 11px; }
+.route-summary { display: flex; align-items: center; gap: 11px; position: relative; overflow: hidden; margin: 18px 0 13px; padding: 13px; border-radius: 11px; background: #edf1e5; }
+.route-arrow { display: grid; place-items: center; width: 33px; height: 33px; border-radius: 10px; color: #f5f2e8; background: #69815b; }
+.route-arrow svg { width: 18px; height: 18px; }
+.route-summary strong, .route-summary span { position: relative; z-index: 1; display: block; }
+.route-summary strong { color: #3b5942; font-size: 12px; }
+.route-summary div:nth-child(2) span { margin-top: 3px; color: #7c8773; font-size: 9px; }
+.route-wash { margin-left: auto; font-size: 31px; opacity: .65; }
+.timing-chips { display: flex; gap: 17px; color: #828876; font-size: 9px; }
+.timing-chips span { display: flex; align-items: center; gap: 6px; }
+.safety-card { display: flex; align-items: flex-start; gap: 11px; margin: 13px 0; padding: 13px 15px; border: 1px solid #ead8b2; border-radius: 12px; background: #f8f0df; color: #8b6d3f; }
+.safety-card > svg { flex: 0 0 auto; margin-top: 1px; }
+.safety-card strong { font-size: 10px; }.safety-card p { margin: 4px 0 0; color: #796f5b; font-size: 10px; line-height: 1.5; }
+.species-section-heading { display: flex; align-items: flex-end; justify-content: space-between; margin: 31px 0 12px; }
+.species-section-heading h2, .gems-heading h2 { margin: 5px 0 0; color: var(--deep); font: 500 25px Fraunces, Georgia, serif; }
+.species-count { color: #87936f; font: 500 22px Fraunces, Georgia, serif; }.species-count span { display: block; margin-top: -3px; text-align: right; color: #9a9c8d; font: 9px 'DM Sans', sans-serif; }
+.species-list, .gem-list { display: grid; gap: 10px; }
+.species-card { position: relative; display: grid; grid-template-columns: 22px 92px minmax(0, 1fr); gap: 13px; align-items: center; padding: 12px; border: 1px solid #e8e6dc; border-radius: 14px; background: #fcfaf4; }
+.species-number { align-self: start; padding-top: 3px; color: #9ba287; font: 500 13px Fraunces, Georgia, serif; text-align: center; }
+.species-art { position: relative; display: grid; place-items: center; width: 92px; height: 91px; overflow: hidden; border-radius: 12px; background: linear-gradient(145deg, #e8eedb, #dce7ce); }
+.art-sun { position: absolute; top: 12px; right: 13px; width: 19px; height: 19px; border-radius: 50%; background: #edce8a; opacity: .75; }
+.art-emoji { position: relative; z-index: 1; transform: translateY(-1px); font-size: 47px; filter: drop-shadow(0 3px 2px rgba(47,70,39,.11)); }
+.art-grass { position: absolute; bottom: -9px; width: 80px; height: 23px; border-radius: 50% 50% 0 0; background: #94a87b; }
+.grass-two { right: -25px; bottom: -12px; width: 80px; height: 29px; background: #7f986c; opacity: .85; }
+.species-info { min-width: 0; align-self: center; }
+.species-group { color: #89917d; font-size: 8px; font-weight: 600; letter-spacing: .65px; text-transform: uppercase; }
+.species-group span { margin: 0 3px; color: #bcc0b3; }
+.species-info h3 { margin: 4px 0 8px; color: #355642; font: 500 19px Fraunces, Georgia, serif; }
+.fieldcraft-label { margin: 0 0 2px; color: #a18c5c; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: .65px; }
+.fieldcraft-copy { max-width: 390px; margin: 0; color: #737d6f; font-size: 10px; line-height: 1.55; }
+.spot-button { grid-column: 3; justify-self: start; display: inline-flex; align-items: center; gap: 6px; margin-top: -2px; padding: 6px 0 0; border: 0; background: none; color: #607b51; font-size: 9px; font-weight: 600; }
+.spot-button--added { color: #47764f; }
+.gems-heading { display: flex; align-items: center; gap: 12px; margin: 28px 0 12px; }
+.gems-heading h2 { font-size: 22px; }.gems-heading p { margin: 3px 0 0; color: #909386; font-size: 9px; }
+.gem-star { color: #c39b4f; font-size: 21px; }.gem-card { background: #f7f4e9; }
+.gem-card .species-art { background: linear-gradient(145deg, #eee9d6, #e2e8d3); }
+.conduct-card { display: flex; gap: 10px; align-items: flex-start; margin-top: 22px; padding: 15px; border: 1px solid #dae2d2; border-radius: 12px; background: #eff2e8; }
+.conduct-icon { display: grid; place-items: center; flex: 0 0 30px; height: 30px; border-radius: 10px; background: #dfe8d5; color: #5c7954; }
+.conduct-card strong { color: #526a4f; font: 500 15px Fraunces, Georgia, serif; }.conduct-card p { margin: 4px 0 0; color: #737d6b; font-size: 9px; line-height: 1.6; }
+.mission-aside { display: flex; flex-direction: column; gap: 13px; }
+.aside-card { padding: 18px; border-radius: 14px; background: #e7ecdd; }
+.phone-card { min-height: 205px; background: #e4ead8; }
+.phone-flower { margin-bottom: 16px; font-size: 28px; }
+.phone-card p { margin: 11px 0 13px; color: #60715c; font: 400 14px/1.7 Fraunces, Georgia, serif; }
+.aside-signature { color: #879079; font: italic 10px Fraunces, Georgia, serif; }
+.data-card { background: #f9f6ec; }
+.data-card p { margin: 10px 0 8px; color: #586c52; font: 500 13px/1.6 Fraunces, Georgia, serif; }
+.data-card small { color: #888c7f; font-size: 9px; line-height: 1.6; }
+.secondary-button { display: flex; align-items: center; gap: 9px; padding: 12px; border: 1px solid #e1e3d7; border-radius: 11px; background: #faf8f0; color: #54724d; font-size: 10px; font-weight: 600; text-align: left; }
+.secondary-button svg:last-child { margin-left: auto; }
+.simple-page { max-width: 760px; }
+.simple-heading { margin: 13px 0 28px; }
+.simple-heading h1 { margin: 8px 0 12px; font-size: 50px; }
+.simple-heading p { max-width: 580px; margin: 0; color: #748071; font-size: 13px; line-height: 1.7; }
+.heading-flower { margin-left: 12px; color: #b49c61; font-size: 23px; vertical-align: top; }
+.journal-card, .settings-card { padding: 22px; border: 1px solid #e7e5da; border-radius: 16px; background: #fcfaf4; }
+.empty-journal { display: grid; justify-items: center; padding: 44px 20px; color: #79856d; text-align: center; }
+.empty-journal div { font-size: 42px; }.empty-journal p { max-width: 300px; margin: 13px 0 0; font: 15px/1.7 Fraunces, Georgia, serif; }
+.journal-row { display: flex; align-items: center; gap: 13px; padding: 10px 0; border-bottom: 1px solid #efede4; }
+.species-art--small { flex: 0 0 46px; width: 46px; height: 46px; border-radius: 10px; }
+.species-art--small .art-emoji { font-size: 26px; }.species-art--small .art-sun { top: 6px; right: 7px; width: 11px; height: 11px; }
+.species-art--small .art-grass { width: 44px; height: 12px; }.species-art--small .grass-two { width: 38px; height: 15px; }
+.journal-row > div:nth-child(2) { flex: 1; }.journal-row strong, .journal-row span { display: block; }.journal-row strong { color: #385b43; font: 500 17px Fraunces, Georgia, serif; }.journal-row span { margin-top: 4px; color: #858b7d; font-size: 9px; }.journal-row > svg { color: #84966c; }
+.journal-actions { display: flex; align-items: center; gap: 13px; margin-top: 16px; color: #87907d; font-size: 10px; }.journal-actions > span { margin-right: auto; }
+.danger-text { color: #9a6c5f; }
+.about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.info-card { padding: 19px; border: 1px solid #e7e5da; border-radius: 14px; background: #fcfaf4; }
+.info-icon { display: grid; place-items: center; width: 34px; height: 34px; margin-bottom: 13px; border-radius: 11px; background: #e9eddf; color: #687f5a; }
+.info-card h2 { margin: 0 0 8px; color: #3b5a42; font: 500 18px Fraunces, Georgia, serif; }
+.info-card p { margin: 0; color: #778071; font-size: 10px; line-height: 1.7; }
+.outside-log { margin-top: 14px; padding: 18px; border-radius: 13px; background: #e8eddf; }.outside-log p { margin: 9px 0 0; color: #65745c; font: 13px/1.7 Fraunces, Georgia, serif; }
+.settings-card { display: grid; gap: 20px; }
+.settings-control { display: grid; grid-template-columns: 1fr minmax(150px, 220px); gap: 18px; align-items: center; color: #4f674e; font-size: 12px; }
+.settings-control > span { display: flex; justify-content: space-between; gap: 10px; }.settings-control small { color: #8a907e; font-size: 10px; }
+.settings-control select { padding: 9px 12px; border: 1px solid #e3e3d8; border-radius: 8px; background: #f8f7ef; color: #405f46; }
+.settings-control input[type=range] { accent-color: #55754d; }
+.model-setting, .offline-setting { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid var(--line); }
+.model-icon { display: grid; place-items: center; flex: 0 0 35px; height: 35px; border-radius: 11px; background: #f3ebd8; font-size: 17px; }
+.model-setting > div:nth-child(2), .offline-setting > div { flex: 1; }.model-setting strong, .offline-setting strong { color: #53684d; font-size: 11px; }.model-setting p, .offline-setting p { margin: 4px 0 0; color: #81887a; font-size: 9px; line-height: 1.5; }
+.soon-pill { padding: 5px 7px; border-radius: 12px; background: #eeecdf; color: #8a8e7e; font-size: 8px; letter-spacing: .6px; }
+.offline-setting > svg { color: #8e987f; }.install-button { margin-top: 1px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+@media (max-width: 980px) {
+  .main-content { padding: 42px 26px 60px; }
+  .plan-layout { gap: 34px; grid-template-columns: minmax(290px, .9fr) minmax(390px, 1.1fr); }
+  .intro-column h1 { font-size: 56px; }
+  .mission-grid { grid-template-columns: minmax(0, 1fr) 220px; gap: 20px; }
+}
+@media (max-width: 760px) {
+  .topbar { height: 64px; padding: 0 18px; }
+  .offline-indicator { display: none; }
+  .top-actions { gap: 12px; }
+  .main-content { padding: 31px 18px 42px; }
+  .plan-layout { grid-template-columns: 1fr; gap: 24px; }
+  .intro-column { padding: 0; }
+  .mini-label { margin-bottom: 15px; }
+  .intro-column h1 { font-size: clamp(47px, 13vw, 60px); }
+  .intro-copy { margin: 14px 0 17px; font-size: 13px; }
+  .intro-note { display: none; }
+  .little-illustration { display: none; }
+  .plan-card { padding: 23px 20px 18px; }
+  .card-heading h2 { font-size: 23px; }
+  .footer { flex-wrap: wrap; gap: 9px; padding: 12px 18px; }
+  .footer-left { width: 100%; }.footer-links { gap: 12px; }
+  .footer-lock { margin-left: auto; }
+  .mission-banner { align-items: flex-start; gap: 10px; }
+  .mission-banner h1 { font-size: clamp(37px, 9vw, 49px); }
+  .route-stamp { min-width: 74px; padding: 10px 12px; }
+  .mission-grid { grid-template-columns: 1fr; }
+  .mission-aside { display: grid; grid-template-columns: 1fr 1fr; }
+  .phone-card { min-height: auto; }.phone-card p { font-size: 12px; }
+  .mission-aside .secondary-button { grid-column: 1 / -1; }
+  .species-card { grid-template-columns: 17px 72px minmax(0,1fr); gap: 9px; padding: 10px; }
+  .species-art { width: 72px; height: 76px; }.art-emoji { font-size: 39px; }
+  .species-info h3 { font-size: 17px; }.fieldcraft-copy { font-size: 9px; }
+  .spot-button { font-size: 8px; }
+  .simple-heading h1 { font-size: 43px; }
+}
+@media (max-width: 440px) {
+  .brand { font-size: 12px; }.brand-mark { width: 32px; height: 32px; }
+  .plan-card { margin: 0 -3px; padding: 19px 15px 16px; }
+  .location-display { gap: 8px; }.location-display .text-button { max-width: 104px; white-space: normal; text-align: right; font-size: 9px; }
+  .offline-map { height: 145px; }
+  .mission-aside { grid-template-columns: 1fr; }.mission-aside .secondary-button { grid-column: auto; }
+  .species-card { grid-template-columns: 15px 60px minmax(0,1fr); gap: 8px; }
+  .species-art { width: 60px; height: 65px; }.art-emoji { font-size: 33px; }
+  .species-info h3 { font-size: 15px; }.species-group { font-size: 7px; }
+  .fieldcraft-label { font-size: 7px; }.fieldcraft-copy { font-size: 8px; }
+  .spot-button { gap: 4px; font-size: 7px; }
+  .journal-card, .settings-card { padding: 16px; }
+  .journal-actions { flex-wrap: wrap; gap: 6px; }.journal-actions > span { width: 100%; }
+  .about-grid { grid-template-columns: 1fr; }
+  .settings-control { grid-template-columns: 1fr; gap: 8px; }
+  .footer-left { font-size: 9px; }.footer-links { gap: 10px; }
+  .footer-links button, .footer-lock { font-size: 8px; }
+}

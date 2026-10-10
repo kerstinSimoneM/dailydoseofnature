@@ -1,0 +1,6 @@
+# Curated GBIF taxonKeys suitable for unaided observation or a hand lens.
+# The release build must never infer inclusion from popularity alone.
+taxon_keys: []
+excluded:
+  - microscopic taxa
+  - expert-only taxa
