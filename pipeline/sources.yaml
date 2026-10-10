@@ -1,0 +1,17 @@
+# These IDs must be verified against the supplied GBIF download metadata.
+observations:
+  dataset_key: "50c9509d-22c7-4a22-a47d-8c48425ef4a7"
+  title: iNaturalist Research-grade Observations
+  max_age_years: 5
+  max_coordinate_uncertainty_m: 100
+  download_archive_required: true
+  download_doi_required: true
+weather:
+  fixed_latitude: 52.520
+  fixed_longitude: 13.405
+  provider: Open-Meteo historical archive
+  licence: CC BY 4.0
+osm:
+  provider: Geofabrik Berlin extract
+  attribution: © OpenStreetMap contributors
+  licence: ODbL

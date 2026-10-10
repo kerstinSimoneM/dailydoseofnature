@@ -1,19 +1,52 @@
 import { z } from 'zod';
 
 export type Language = 'en' | 'de' | 'fr';
-export type Group = 'Bird' | 'Plant' | 'Mammal' | 'Invertebrate' | 'Fungi';
+export type Group = 'Bird' | 'Plant' | 'Mammal' | 'Invertebrate' | 'Fungi' | 'Herpetofauna' | 'Other';
 
 export const speciesSchema = z.object({
   id: z.string(),
-  group: z.enum(['Bird', 'Plant', 'Mammal', 'Invertebrate', 'Fungi']),
+  group: z.enum(['Bird', 'Plant', 'Mammal', 'Invertebrate', 'Fungi', 'Herpetofauna', 'Other']),
   emoji: z.string(),
   names: z.record(z.enum(['en', 'de', 'fr']), z.string()),
   months: z.array(z.number().int().min(1).max(12)),
   habitats: z.array(z.string()),
   fieldcraft: z.record(z.enum(['en', 'de', 'fr']), z.string()),
+  month_lifts: z.record(z.string(), z.number().nonnegative()).optional(),
+  time_lifts: z.record(z.string(), z.object({ lift: z.number().nonnegative() })).optional(),
+  weather_lifts: z.record(z.string(), z.object({ lift: z.number().nonnegative() })).optional(),
+  cell_rates: z.record(z.string(), z.object({
+    rate: z.number().nonnegative(),
+    support: z.number().int().nonnegative(),
+    effort: z.number().int().nonnegative(),
+    low_effort: z.boolean(),
+    parent_rate: z.number().nonnegative(),
+  })).optional(),
+  baseline_rate: z.number().nonnegative().optional(),
+  active_seasons: z.record(z.string(), z.boolean()).optional(),
+  observation_count: z.number().int().positive().optional(),
+  distinct_years: z.number().int().positive().optional(),
+  scientific_name: z.string().min(1).optional(),
+  common_names: z.record(z.enum(['en', 'de', 'fr']), z.string().min(1)).optional(),
+  licenses: z.array(z.enum(['CC0_1_0', 'CC_BY_4_0'])).optional(),
 });
 
 export type Species = z.infer<typeof speciesSchema>;
+
+export function speciesDisplayName(item: Species, language: Language): {
+  name: string;
+  commonNameLanguage: Language | null;
+} {
+  const directName = item.common_names?.[language];
+  if (directName) return { name: directName, commonNameLanguage: language };
+  for (const fallbackLanguage of ['en', 'de', 'fr'] as const) {
+    const commonName = item.common_names?.[fallbackLanguage];
+    if (commonName) return { name: commonName, commonNameLanguage: fallbackLanguage };
+  }
+  return {
+    name: item.names[language] || item.names.en || item.scientific_name || item.id,
+    commonNameLanguage: item.scientific_name ? null : language,
+  };
+}
 
 // Hand-written demo content keeps the prototype useful offline; it is not occurrence data.
 export const species: Species[] = [
@@ -33,25 +66,53 @@ export const species: Species[] = [
 
 species.forEach((item) => speciesSchema.parse(item));
 
-export const anchors = [
+export type Anchor = {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  habitat: string;
+  lit: boolean;
+  access: string;
+  cell?: string;
+  parent?: string;
+};
+
+export const anchors: Anchor[] = [
   { id: 'street-trees', name: 'Mitte leafy streets', lat: 52.5228, lng: 13.4092, habitat: 'sheltered street trees & planted courtyards', lit: true, access: 'public' },
-  { id: 'tiergarten', name: 'Tiergarten', lat: 52.5145, lng: 13.3501, habitat: 'woodland paths & open lawns', lit: true, access: 'public' },
+  { id: 'tiergarten', name: 'Tiergarten', lat: 52.5145, lng: 13.3501, habitat: 'shaded paths & open lawns', lit: true, access: 'public' },
   { id: 'f-hain', name: 'Volkspark Friedrichshain', lat: 52.5274, lng: 13.4324, habitat: 'old trees & meadow edges', lit: true, access: 'public' },
   { id: 'treptower', name: 'Treptower Park', lat: 52.4875, lng: 13.4692, habitat: 'riverbank & open parkland', lit: true, access: 'public' },
   { id: 'hasenheide', name: 'Volkspark Hasenheide', lat: 52.4857, lng: 13.4157, habitat: 'meadows & mature trees', lit: true, access: 'public' },
   { id: 'tempelhof', name: 'Tempelhofer Feld', lat: 52.4731, lng: 13.4032, habitat: 'wide open grassland', lit: false, access: 'public' },
-  { id: 'spree', name: 'Spree riverside path', lat: 52.5203, lng: 13.4062, habitat: 'riverside path & planted edges', lit: true, access: 'public' },
+  { id: 'spree', name: 'Spree riverside path', lat: 52.5203, lng: 13.4062, habitat: 'riverside path & planted edges with water nearby', lit: true, access: 'public' },
+];
+
+const pickerAreaRows = [
+  { y: 30, band: 'North', x: [120, 165, 210] },
+  { y: 65, band: 'North-central', x: [75, 115, 155, 195, 235, 275] },
+  { y: 100, band: 'Central-north', x: [62, 112, 160, 208, 267] },
+  { y: 135, band: 'Central-south', x: [58, 98, 138, 178, 218, 258] },
+  { y: 170, band: 'South-central', x: [80, 120, 160, 200, 240] },
+  { y: 195, band: 'South', x: [140, 180, 220] },
 ] as const;
 
-export const pickerCells = [
-  { id: 'west', name: 'West Berlin', lat: 52.515, lng: 13.30, x: 72, y: 98 },
-  { id: 'north', name: 'North Berlin', lat: 52.565, lng: 13.405, x: 154, y: 55 },
-  { id: 'center', name: 'Central Berlin', lat: 52.52, lng: 13.405, x: 157, y: 111 },
-  { id: 'east', name: 'East Berlin', lat: 52.515, lng: 13.49, x: 242, y: 111 },
-  { id: 'southwest', name: 'South-west Berlin', lat: 52.465, lng: 13.32, x: 86, y: 164 },
-  { id: 'south', name: 'South Berlin', lat: 52.465, lng: 13.405, x: 158, y: 166 },
-  { id: 'southeast', name: 'South-east Berlin', lat: 52.465, lng: 13.49, x: 234, y: 163 },
-] as const;
+const pickerSectors: Record<number, readonly string[]> = {
+  3: ['West-central', 'Central', 'East-central'],
+  5: ['West', 'West-central', 'Central', 'East-central', 'East'],
+  6: ['West', 'West-central', 'Central-west', 'Central-east', 'East-central', 'East'],
+};
+
+export const pickerCells = pickerAreaRows.flatMap((row, rowIndex) =>
+  row.x.map((x, columnIndex) => ({
+    id: `area-${rowIndex + 1}-${columnIndex + 1}`,
+    name: `${row.band} ${pickerSectors[row.x.length][columnIndex]}`,
+    lat: 52.52 - (row.y - 110) * 0.00065,
+    lng: 13.405 + (x - 160) * 0.00085,
+    x,
+    y: row.y,
+  })),
+);
 
 export const weatherOptions = [
   'dry_sunny',

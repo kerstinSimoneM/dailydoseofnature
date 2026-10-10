@@ -1,20 +1,30 @@
 import SunCalc from 'suncalc';
-import { latLngToCell } from 'h3-js';
-import { anchors, species, type Language, type Weather } from './data';
+import { cellToParent, getResolution, latLngToCell } from 'h3-js';
+import { anchors, species, type Anchor, type Language, type Species, type Weather } from './data';
 
 export type Coordinates = { lat: number; lng: number };
+export type SafetyHazards = { thunderstorm?: boolean; icy?: boolean; heat?: boolean };
+export type MissionCatalog = {
+  anchors: Anchor[];
+  species: Species[];
+  builtAt?: string;
+  speciesLocation?: 'origin' | 'destination' | 'both';
+};
 export type Mission = {
-  anchor: (typeof anchors)[number];
+  anchor: Anchor;
   distanceKm: number;
   bearing: number;
   walkMinutes: number;
   observeMinutes: number;
-  stops: (typeof anchors)[number][];
-  targets: typeof species;
-  gems: typeof species;
+  stops: Anchor[];
+  targets: Species[];
+  gems: Species[];
   safety: string | null;
   context: Weather;
   h3Cell: string;
+  nearbyEvidenceCell: string | null;
+  freshness: string;
+  dataBuiltAt: string | null;
 };
 
 export function haversineKm(from: Coordinates, to: Coordinates): number {
@@ -59,8 +69,10 @@ export function timeOfDay(date: Date, location: Coordinates): 'dawn' | 'late_mor
 
 export function missionBudget(totalMinutes: number, walkFraction = 0.6, pace = 75, detour = 1.35) {
   const total = Math.min(360, Math.max(5, totalMinutes));
-  const walking = total * walkFraction;
-  const observing = total >= 25 ? Math.max(10, total - walking) : total - walking;
+  const walking = total >= 25
+    ? Math.min(total * walkFraction, total - 10)
+    : total * walkFraction;
+  const observing = total - walking;
   const radiusKm = ((walking / 2) * pace) / detour / 1000;
   return {
     total,
@@ -71,6 +83,11 @@ export function missionBudget(totalMinutes: number, walkFraction = 0.6, pace = 7
   } as const;
 }
 
+export function estimateRoundTripWalkMinutes(distanceKm: number, pace = 75, detour = 1.35): number {
+  if (distanceKm <= 0) return 0;
+  return Math.ceil((distanceKm * 2 * detour * 1_000) / pace);
+}
+
 export function monthLift(month: number, activeMonths: number[]): number {
   const active = new Set(activeMonths);
   const previous = month === 1 ? 12 : month - 1;
@@ -78,7 +95,39 @@ export function monthLift(month: number, activeMonths: number[]): number {
   return Number((0.25 * Number(active.has(previous)) + 0.5 * Number(active.has(month)) + 0.25 * Number(active.has(next))).toFixed(2));
 }
 
-export function safetyMessage(weather: Weather, location: Coordinates, when: Date, totalMinutes: number, language: Language): string | null {
+function illustrativeContextLift(
+  entry: Species,
+  anchor: Anchor,
+  weather: Weather,
+  period: ReturnType<typeof timeOfDay>,
+  minutes: number,
+): number {
+  const wet = weather === 'light_rain' || weather === 'heavy_rain';
+  const daylight = period === 'dawn' || period === 'late_morning' || period === 'afternoon';
+  let lift = 1;
+
+  if (entry.group === 'Bird' && (period === 'dawn' || period === 'late_morning')) lift *= 1.7;
+  if (entry.group === 'Mammal' && (period === 'dusk' || period === 'night')) lift *= 1.8;
+  if (entry.group === 'Fungi' && wet) lift *= 1.8;
+  if ((entry.group === 'Plant' || entry.group === 'Invertebrate') && daylight && weather === 'dry_sunny') lift *= 1.7;
+  if (entry.group === 'Bird' && weather === 'snow_frost_ice') lift *= 1.6;
+  if (minutes < 20 && (entry.group === 'Bird' || entry.group === 'Plant')) lift *= 1.35;
+  if (minutes >= 90 && (entry.group === 'Mammal' || entry.group === 'Fungi' || entry.group === 'Invertebrate')) lift *= 1.35;
+
+  const anchorWords = anchor.habitat.toLocaleLowerCase().match(/[a-z]{4,}/g) ?? [];
+  const habitatWords = entry.habitats.flatMap((habitat) => habitat.toLocaleLowerCase().match(/[a-z]{4,}/g) ?? []);
+  const overlap = new Set(anchorWords.filter((word) => habitatWords.includes(word))).size;
+  return lift * (1 + Math.min(0.3, overlap * 0.1));
+}
+
+export function safetyMessage(
+  weather: Weather,
+  location: Coordinates,
+  when: Date,
+  totalMinutes: number,
+  language: Language,
+  hazards: SafetyHazards = {},
+): string | null {
   const labels = {
     en: {
       storm: 'Thunder is in the forecast: stay indoors until it has passed. Take this short, sheltered street-tree wander only when it is safe.',
@@ -99,8 +148,8 @@ export function safetyMessage(weather: Weather, location: Coordinates, when: Dat
       heat: 'Il peut faire chaud : reste à l’ombre, emporte de l’eau et fais des pauses.',
     },
   }[language];
-  if (weather === 'thunderstorm') return labels.storm;
-  if (weather === 'snow_frost_ice') return labels.ice;
+  if (weather === 'thunderstorm' || hazards.thunderstorm) return labels.storm;
+  if (weather === 'snow_frost_ice' || hazards.icy) return labels.ice;
   let nightMinutes = 0;
   const totalMs = Math.max(0, Math.min(360, totalMinutes)) * 60_000;
   for (let elapsed = 0; elapsed < totalMs; elapsed += 60 * 60_000) {
@@ -108,6 +157,7 @@ export function safetyMessage(weather: Weather, location: Coordinates, when: Dat
     if (timeOfDay(new Date(when.getTime() + elapsed), location) === 'night') nightMinutes += intervalMinutes;
   }
   if (totalMinutes > 0 && nightMinutes / totalMinutes > 0.5) return labels.night;
+  if (hazards.heat) return labels.heat;
   return null;
 }
 
@@ -119,38 +169,87 @@ export function buildMission(
   walkFraction = 0.6,
   pace = 75,
   language: Language = 'en',
+  hazards: SafetyHazards = {},
+  freshness = 'Seasonal starter guide · illustrative, not live sighting data',
+  catalog: MissionCatalog = { anchors, species },
 ): Mission {
-  const budget = missionBudget(totalMinutes, walkFraction, pace);
-  const rankedAnchors = anchors
+  const icy = weather === 'snow_frost_ice' || hazards.icy;
+  const budget = missionBudget(totalMinutes, icy ? walkFraction * 0.5 : walkFraction, pace);
+  const rankedAnchors = catalog.anchors
     .map((anchor) => ({ anchor, distanceKm: haversineKm(location, anchor) }))
     .sort((a, b) => a.distanceKm - b.distanceKm);
-  const nearest = rankedAnchors[0];
-  const eligible = rankedAnchors.filter(({ anchor, distanceKm }) => distanceKm <= budget.radiusKm && anchor.access === 'public');
-  const nightShare = Array.from({ length: Math.ceil(totalMinutes / 60) }, (_, hour) => {
-    const part = Math.min(60, totalMinutes - hour * 60);
+  const eligible = rankedAnchors.filter(({ anchor, distanceKm }) =>
+    anchor.access === 'public' &&
+    distanceKm <= budget.radiusKm &&
+    estimateRoundTripWalkMinutes(distanceKm, pace) <= budget.walkMinutes,
+  );
+  const nightShare = Array.from({ length: Math.ceil(budget.total / 60) }, (_, hour) => {
+    const part = Math.min(60, budget.total - hour * 60);
     return timeOfDay(new Date(when.getTime() + hour * 60 * 60_000), location) === 'night' ? part : 0;
-  }).reduce((sum, value) => sum + value, 0) / Math.max(totalMinutes, 1);
-  const fallbackNightAnchor = rankedAnchors.find(({ anchor }) => anchor.id === 'street-trees');
-  const safetyEligible = weather === 'thunderstorm'
+  }).reduce((sum, value) => sum + value, 0) / Math.max(budget.total, 1);
+  const safetyEligible = weather === 'thunderstorm' || hazards.thunderstorm
     ? eligible.filter(({ anchor }) => anchor.id === 'street-trees')
-    : weather === 'snow_frost_ice'
+    : icy
       ? eligible.filter(({ anchor }) => anchor.lit)
+      : hazards.heat
+        ? eligible.filter(({ anchor }) => anchor.id === 'tiergarten' || anchor.id === 'spree')
       : eligible;
   const safeForNight = nightShare > 0.5
     ? safetyEligible.filter(({ anchor }) => anchor.lit && !anchor.habitat.includes('woodland'))
     : safetyEligible;
-  const chosen = safeForNight.length > 0
-    ? safeForNight
-    : (nightShare > 0.5 || weather === 'thunderstorm' || weather === 'snow_frost_ice') && fallbackNightAnchor
-      ? [fallbackNightAnchor]
-      : safetyEligible.length > 0 ? safetyEligible : [nearest];
-  const anchor = chosen[0].anchor;
+  const chooseReachable = (items: typeof rankedAnchors) => [...items].sort((a, b) => b.distanceKm - a.distanceKm);
+  const chosen = chooseReachable(safeForNight);
+  const anchor = chosen[0]?.anchor ?? {
+    id: 'nearby-start',
+    name: { en: 'Nature near your start', de: 'Natur am Startgebiet', fr: 'Nature près du départ' }[language],
+    lat: location.lat,
+    lng: location.lng,
+    habitat: 'no destination fits this outing; notice nature from the starting area',
+    lit: false,
+    access: 'starting-area',
+  };
+  const distanceKm = haversineKm(location, anchor);
+  const walkMinutes = estimateRoundTripWalkMinutes(distanceKm, pace);
+  const spatialPoint = catalog.speciesLocation === 'destination' ? anchor : location;
   const month = when.getMonth() + 1;
 
-  const eligibleSpecies = species
-    .map((entry) => ({ entry, lift: monthLift(month, entry.months) }))
+  const spatialRate = (entry: Species, point: Coordinates): number => {
+    const exactRate = [8, 7, 6, 5].map((resolution) =>
+      entry.cell_rates?.[latLngToCell(point.lat, point.lng, resolution)]?.rate,
+    ).find((rate) => rate !== undefined);
+    if (exactRate !== undefined) return exactRate;
+    const parentRate = Object.entries(entry.cell_rates ?? {})
+      .find(([cell]) => getResolution(cell) >= 7 && cellToParent(cell, 7) === cellToParent(
+        latLngToCell(point.lat, point.lng, 8),
+        7,
+      ))?.[1].parent_rate;
+    return parentRate ?? entry.baseline_rate ?? 1;
+  };
+  const hourPeriod = timeOfDay(when, location);
+  const hasReleaseSignals = Boolean(catalog.builtAt || catalog.species.some((entry) =>
+    entry.cell_rates || entry.time_lifts || entry.weather_lifts,
+  ));
+  const nearbyEvidenceCell = anchor.id === 'nearby-start' && catalog.speciesLocation === 'both'
+    ? latLngToCell(location.lat, location.lng, 6)
+    : null;
+  const eligibleSpecies = catalog.species
+    .map((entry) => {
+      const namedMonth = new Intl.DateTimeFormat('en', { month: 'long' })
+        .format(new Date(2024, month - 1, 1)).toLocaleLowerCase('en');
+      const seasonalLift = entry.month_lifts?.[namedMonth] ?? monthLift(month, entry.months);
+      const placeLift = catalog.speciesLocation === 'both'
+        ? Math.sqrt(spatialRate(entry, location) * spatialRate(entry, anchor))
+        : spatialRate(entry, spatialPoint);
+      const timeLift = entry.time_lifts?.[hourPeriod]?.lift ?? 1;
+      const weatherLift = entry.weather_lifts?.[weather]?.lift ?? 1;
+      const illustrativeLift = hasReleaseSignals ? 1 : illustrativeContextLift(entry, anchor, weather, hourPeriod, budget.total);
+      return { entry, lift: placeLift * seasonalLift * timeLift * weatherLift * illustrativeLift };
+    })
+    .filter(({ entry }) =>
+      nearbyEvidenceCell === null || Boolean(entry.cell_rates?.[nearbyEvidenceCell]?.support),
+    )
     .sort((a, b) => b.lift - a.lift || a.entry.id.localeCompare(b.entry.id));
-  const groupBalanced: typeof species = [];
+  const groupBalanced: Species[] = [];
   for (const candidate of eligibleSpecies) {
     if (groupBalanced.filter((selected) => selected.group === candidate.entry.group).length < 2) {
       groupBalanced.push(candidate.entry);
@@ -165,17 +264,20 @@ export function buildMission(
 
   return {
     anchor,
-    distanceKm: nearest.distanceKm,
+    distanceKm,
     bearing,
-    walkMinutes: budget.walkMinutes,
-    observeMinutes: budget.observeMinutes,
-    stops: chosen.slice(0, budget.tier === 'multi-stop' ? 3 : 1).map((item) => item.anchor),
+    walkMinutes,
+    observeMinutes: Math.max(0, budget.total - walkMinutes),
+    stops: [anchor],
     targets: groupBalanced,
     gems,
-    safety: safetyMessage(weather, location, when, budget.total, language),
+    safety: safetyMessage(weather, location, when, budget.total, language, hazards),
     context: weather,
     // Computed locally for coarse backoff; never persisted or sent over the network.
     h3Cell: latLngToCell(location.lat, location.lng, 8),
+    nearbyEvidenceCell,
+    freshness,
+    dataBuiltAt: catalog.builtAt ?? null,
   };
 }
 

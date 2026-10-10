@@ -1,6 +1,6 @@
 import unittest
 
-from weather import weather_bucket
+from pipeline.weather import weather_bucket
 
 
 def classify(**overrides):

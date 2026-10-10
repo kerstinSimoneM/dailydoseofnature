@@ -77,13 +77,21 @@ h1, h2, h3, p { margin-top: 0; }
 .map-river { position: absolute; z-index: -1; width: 160%; height: 16px; border-radius: 50%; background: #c2d9d9; opacity: .85; transform: rotate(-24deg); }
 .river-one { top: 45%; left: -15%; }
 .river-two { top: 59%; left: 4%; width: 105%; height: 8px; transform: rotate(11deg); }
-.hex-cell { position: absolute; width: 34px; height: 37px; transform: translate(-50%,-50%); display: grid; place-items: center; border: 1px solid rgba(106,132,92,.48); background: rgba(250,249,241,.58); color: #728760; clip-path: polygon(25% 4%,75% 4%,100% 50%,75% 96%,25% 96%,0% 50%); font-size: 18px; transition: .16s ease; }
-.hex-cell:hover, .hex-cell.is-selected { z-index: 2; width: 40px; height: 43px; background: #56764b; color: #fff9e7; }
+.hex-cell { position: absolute; width: 27px; height: 25px; transform: translate(-50%,-50%); display: grid; place-items: center; border: 1px solid rgba(106,132,92,.48); background: rgba(250,249,241,.82); color: #536b4d; clip-path: polygon(25% 4%,75% 4%,100% 50%,75% 96%,25% 96%,0% 50%); font-size: 9px; font-weight: 600; transition: .16s ease; }
+.hex-cell:hover, .hex-cell:focus-visible, .hex-cell.is-selected { z-index: 2; width: 32px; height: 30px; background: #56764b; color: #fff9e7; }
 .map-label { position: absolute; color: #9aa18f; font-size: 7px; letter-spacing: .6px; font-weight: 600; }
 .label-west { left: 13%; top: 47%; }.label-east { right: 9%; top: 34%; }.label-south { left: 41%; bottom: 11%; }
 .privacy-note { display: flex; align-items: center; gap: 7px; margin: 9px 0 13px; color: #77846a; font-size: 9px; }
 .form-divider { height: 1px; background: var(--line); margin: 0 0 14px; }
 .setting-row, .weather-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+.weather-row { align-items: flex-end; }
+.weather-summary, .weather-control { display: grid; gap: 6px; }
+.weather-summary strong { display: flex; align-items: center; gap: 6px; color: #536b4d; font-size: 11px; }
+.weather-control { justify-items: end; }
+.permission-help { margin: -3px 0 12px 45px; padding: 9px 11px; border: 1px solid #e8e1ce; border-radius: 8px; background: #fbf8ef; color: #6a695d; font-size: 10px; line-height: 1.5; }
+.permission-help p { margin: 0 0 6px; }
+.permission-help > div { display: flex; flex-wrap: wrap; gap: 6px 12px; }
+.permission-help a { color: #41654a; font-weight: 600; }
 .setting-row > div:first-child { display: grid; gap: 4px; }
 .setting-hint { color: #929587; font-size: 9px; }
 .number-input { display: flex; align-items: center; gap: 6px; padding: 2px 9px; border: 1px solid #e4e3d8; border-radius: 9px; color: #67775b; background: #f8f7ef; }
@@ -93,6 +101,8 @@ h1, h2, h3, p { margin-top: 0; }
 .weather-select { position: relative; display: flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid #e4e3d8; border-radius: 9px; color: #69785c; background: #f8f7ef; font-size: 10px; }
 .weather-select > span { display: flex; align-items: center; gap: 7px; }
 .weather-select select { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
+.forecast-status { margin: -5px 0 12px; color: #88907e; text-align: right; font-size: 9px; line-height: 1.5; }
+.forecast-status--stale, .forecast-status--error { color: #997646; }
 .primary-button { display: flex; width: 100%; justify-content: space-between; align-items: center; padding: 14px 16px; border: 0; border-radius: 11px; background: #315b43; color: #faf8ec; font-size: 12px; font-weight: 600; box-shadow: 0 5px 12px rgba(49,91,67,.13); transition: background .15s, transform .15s; }
 .primary-button:hover { background: #274b37; transform: translateY(-1px); }
 .starter-note { margin: 10px 0 0; color: #9a9d8d; text-align: center; font-size: 9px; line-height: 1.5; }
@@ -110,6 +120,16 @@ h1, h2, h3, p { margin-top: 0; }
 .banner-flower { margin-left: 4px; color: #b7a76e; font-size: 20px; }
 .route-stamp { display: grid; justify-items: center; min-width: 86px; padding: 13px 17px; border-radius: 15px; background: #e7eddd; color: #577450; }
 .route-stamp span { margin-top: 7px; font-size: 11px; }.route-stamp strong { margin-top: 1px; font: 500 20px Fraunces, Georgia, serif; }
+.briefing-card { margin: -8px 0 27px; padding: 19px 22px; border: 1px solid #dfe5d5; border-radius: 15px; background: #edf1e6; }
+.briefing-heading { display: flex; justify-content: space-between; align-items: center; }
+.briefing-heading p { margin: 5px 0 0; color: #929782; font-size: 9px; }
+.briefing-flower { color: #a7a96d; font-size: 23px; }
+.briefing-copy { max-width: 740px; margin: 13px 0 4px; color: #51694e; font: 16px/1.75 Fraunces, Georgia, serif; }
+.briefing-action { margin-left: -6px; }
+.model-error { margin: 8px 0 0; color: #8e624d; font-size: 10px; line-height: 1.5; }
+.model-progress, .model-requirement { color: #878d7c; font-size: 9px; line-height: 1.55; }
+.model-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+.model-actions .secondary-button { padding: 8px 10px; }
 .mission-grid { display: grid; grid-template-columns: minmax(0, 1fr) 255px; gap: 35px; }
 .mission-main { min-width: 0; }
 .destination-card { padding: 23px 24px 20px; border-radius: 16px; background: #fcfaf4; box-shadow: 0 5px 24px rgba(52,69,47,.05); }
@@ -164,6 +184,8 @@ h1, h2, h3, p { margin-top: 0; }
 .data-card { background: #f9f6ec; }
 .data-card p { margin: 10px 0 8px; color: #586c52; font: 500 13px/1.6 Fraunces, Georgia, serif; }
 .data-card small { color: #888c7f; font-size: 9px; line-height: 1.6; }
+.data-card a { display: inline-block; margin-top: 8px; color: #58774f; font-size: 10px; font-weight: 700; }
+.species-evidence { display: block; margin-top: 4px; color: #788273; font-size: 10px; }
 .secondary-button { display: flex; align-items: center; gap: 9px; padding: 12px; border: 1px solid #e1e3d7; border-radius: 11px; background: #faf8f0; color: #54724d; font-size: 10px; font-weight: 600; text-align: left; }
 .secondary-button svg:last-child { margin-left: auto; }
 .simple-page { max-width: 760px; }
@@ -226,6 +248,7 @@ h1, h2, h3, p { margin-top: 0; }
   .mission-banner h1 { font-size: clamp(37px, 9vw, 49px); }
   .route-stamp { min-width: 74px; padding: 10px 12px; }
   .mission-grid { grid-template-columns: 1fr; }
+  .briefing-card { margin: -10px 0 23px; padding: 17px; }
   .mission-aside { display: grid; grid-template-columns: 1fr 1fr; }
   .phone-card { min-height: auto; }.phone-card p { font-size: 12px; }
   .mission-aside .secondary-button { grid-column: 1 / -1; }

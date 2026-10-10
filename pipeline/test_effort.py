@@ -1,6 +1,6 @@
 import unittest
 
-from effort import cell_rates, shrunk_lifts
+from pipeline.effort import cell_rates, shrunk_lifts
 
 
 class EffortTests(unittest.TestCase):

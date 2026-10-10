@@ -4,12 +4,15 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "pipeline": "python3 -m pipeline.build_pack",
+    "pilot-pack": "python3 -m pipeline.build_observational_pilot"
   },
   "dependencies": {
+    "@mlc-ai/web-llm": "^0.2.85",
     "h3-js": "^4.1.0",
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",

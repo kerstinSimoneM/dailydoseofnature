@@ -1,0 +1,4 @@
+{
+  "enabled": false,
+  "message": "A project-hosted, checksum-pinned WebLLM model has not been packaged for this deployment."
+}
