@@ -298,3 +298,8 @@ h1, h2, h3, p { margin-top: 0; }
 .lightbox-figure figcaption { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
 .lightbox-figure figcaption small { color: #6b6b5a; font-size: 11px; }
 .lightbox-close { position: absolute; top: 6px; right: 6px; width: 34px; height: 34px; border-radius: 50%; border: 0; background: rgba(255,255,255,.92); display: grid; place-items: center; cursor: pointer; }
+
+.map-radius { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+.map-radius ellipse { fill: rgba(86, 118, 75, .14); stroke: #56764b; stroke-width: 1.5; stroke-dasharray: 4 3; vector-effect: non-scaling-stroke; }
+.map-you { position: absolute; z-index: 3; width: 12px; height: 12px; transform: translate(-50%, -50%); border-radius: 50%; background: #3f8f4a; border: 2px solid #fff; box-shadow: 0 0 0 3px rgba(63, 143, 74, .3); pointer-events: none; }
+.map-legend { margin: 6px 0 0; color: #77846a; font-size: 9px; }

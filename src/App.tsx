@@ -4,7 +4,7 @@ import {
   BookOpen, Check, ChevronDown, CircleHelp, Compass, Flower2, Leaf, MapPin,
   Moon, Navigation, RefreshCw, Settings2, ShieldCheck, Sun, TreePine, X,
 } from 'lucide-react';
-import { buildMission, cardinalDirection, formatDistance, type Coordinates, type Mission } from './engine';
+import { buildMission, cardinalDirection, formatDistance, missionBudget, type Coordinates, type Mission } from './engine';
 import { anchors, pickerCells, species, speciesDisplayName, weatherOptions, type Anchor, type Language, type Species, type Weather } from './data';
 import { createPortal } from 'react-dom';
 import speciesImageCredits from './speciesImageCredits.json';
@@ -29,11 +29,11 @@ const copy = {
     location: 'Your patch of Berlin', locate: 'Use my location', locating: 'Finding you…', change: 'Choose a nearby area', areaGridCaption: '28 approximate grid areas',
     locationSource: 'Provided by your browser · used in app memory',
     minutes: 'How long have you got?', min: 'min', weather: 'Conditions for this outing', currentWeather: 'Current Berlin forecast', start: 'Find my little adventure',
-    privacy: 'Tap “Use my location” to ask Safari for a one-time location fix. The app uses it in memory and does not send or save it.',
+    privacy: 'Tap “Use my location” to ask your browser for a one-time location fix. The app uses it in memory and does not send or save it.',
     locationFooter: 'App code does not send or save location',
     mission: 'Your nature note', back: 'Change my plan', today: 'TODAY’S LITTLE ADVENTURE',
     head: 'A green little detour', walk: 'est. round-trip walk', observe: 'noticing', oneWay: 'straight-line, one way', nearby: 'nearby', away: 'away', route: 'Your destination',
-    targets: 'Keep an eye out for', gems: 'Little treasures', fieldcraft: 'A tiny field tip', didYouKnow: 'Did you know?', enlargePhoto: 'Enlarge photo', closePhoto: 'Close photo',
+    targets: 'Keep an eye out for', gems: 'Little treasures', fieldcraft: 'A tiny field tip', mapLegend: 'You are the green dot; the ring is your walking radius (about {r}). Stylised map, not to scale.', didYouKnow: 'Did you know?', enlargePhoto: 'Enlarge photo', closePhoto: 'Close photo',
     safety: 'A gentle safety note', conduct: 'Stay on paths, keep your distance, take nothing, and follow signs in nature reserves.',
     save: 'I spotted this', saved: 'Added to my field notes', checklist: 'Field notes', empty: 'Nothing spotted yet. The first little discovery is yours.',
     notes: 'sightings', clear: 'Clear notes', export: 'Export notes', about: 'About this little app', settings: 'Settings',
@@ -63,14 +63,14 @@ const copy = {
     ready: 'Works offline after first load', noGps: 'This browser does not provide location. Choose an area below.',
     insecureLocation: 'Location only works on a secure HTTPS page (or localhost). Open the site’s HTTPS address, then try again.',
     locationDenied: 'Location permission is blocked. Use the site controls beside the address bar, set Location to Allow, then reload this page.',
-    permissionSteps: 'If Safari did not show a prompt, it may remember an earlier choice. On Mac: Safari → Settings → Websites → Location, set this site to Ask or Allow. On iPhone/iPad: tap the page menu (aA) → Website Settings → Location, set it to Ask or Allow. Also make sure Settings → Privacy & Security → Location Services is on, then return here and try again.',
-    locationServicesHelp: 'Safari permission is already allowed, but the device did not provide a fix. Mac: System Settings → Privacy & Security → Location Services; turn it on and allow Safari. iPhone/iPad: Settings → Privacy & Security → Location Services → Safari Websites; choose While Using and enable Precise Location if shown. Then try again; the app waits up to about a minute.',
+    permissionSteps: 'If your browser did not show a prompt, it may remember an earlier choice. Open this site’s settings (the lock or page-settings icon next to the address bar, or your browser’s Settings → Site settings / Websites → Location) and set Location to Ask or Allow. Also make sure Location Services are turned on for your device and browser, then return here and try again.',
+    locationServicesHelp: 'Browser permission is already allowed, but the device did not provide a fix. Turn on Location Services in your device settings and allow them for your browser (choose While Using and enable Precise Location if shown). Then try again; the app waits up to about a minute.',
     chromeHelp: 'Chrome help', firefoxHelp: 'Firefox help', safariHelp: 'Safari on Mac help', appleLocationHelp: 'iPhone/iPad Location Services',
     locationUnavailable: 'Your browser allowed the request but could not get a location. Turn on your device’s Location Services, then try again; you can also choose an area below.',
     locationTimeout: 'The browser permission is allowed, but the device did not return a location in time. Check system Location Services and try again, or choose an area below.',
     locationSuccess: 'Approximate browser location received and used in app memory.',
     outsideBerlin: 'That looks outside Berlin. I’ve moved the start to the nearest public green path.',
-    inaccurate: 'Safari returned a location too imprecise to place within Berlin. Turn on Precise Location if available, or choose an area below.',
+    inaccurate: 'Your browser returned a location too imprecise to place within Berlin. Turn on Precise Location if available, or choose an area below.',
     noLocation: 'Could not read your location. Choose an area below.',
     storageError: 'Could not read or save your field notes on this device.',
     offlineCheckError: 'The offline cache could not be checked. Keep this page open while it finishes loading.',
@@ -108,11 +108,11 @@ const copy = {
     location: 'Dein Stück Berlin', locate: 'Meinen Standort nutzen', locating: 'Standort wird gesucht…', change: 'Gebiet in der Nähe wählen', areaGridCaption: '28 ungefähre Bereiche',
     locationSource: 'Vom Browser bereitgestellt · in der App im Arbeitsspeicher genutzt',
     minutes: 'Wie viel Zeit hast du?', min: 'Min.', weather: 'Bedingungen für deinen Ausflug', currentWeather: 'Aktuelle Berliner Vorhersage', start: 'Mein kleines Abenteuer finden',
-    privacy: 'Tippe auf „Meinen Standort nutzen“, um Safari einmalig nach deinem Standort zu fragen. Die App nutzt ihn im Arbeitsspeicher und sendet oder speichert ihn nicht.',
+    privacy: 'Tippe auf „Meinen Standort nutzen“, um deinen Browser einmalig nach deinem Standort zu fragen. Die App nutzt ihn im Arbeitsspeicher und sendet oder speichert ihn nicht.',
     locationFooter: 'Die App sendet oder speichert den Standort nicht',
     mission: 'Deine Natur-Notiz', back: 'Plan ändern', today: 'DEIN KLEINES ABENTEUER',
     head: 'Ein grüner kleiner Umweg', walk: 'geschätzter Hin- und Rückweg', observe: 'Entdecken', oneWay: 'Luftlinie, einfache Strecke', nearby: 'in der Nähe', away: 'entfernt', route: 'Dein Ziel',
-    targets: 'Halte Ausschau nach', gems: 'Kleine Schätze', fieldcraft: 'Ein kleiner Beobachtungstipp', didYouKnow: 'Schon gewusst?', enlargePhoto: 'Foto vergrößern', closePhoto: 'Foto schließen',
+    targets: 'Halte Ausschau nach', gems: 'Kleine Schätze', fieldcraft: 'Ein kleiner Beobachtungstipp', mapLegend: 'Du bist der grüne Punkt; der Ring ist dein Gehradius (etwa {r}). Stilisierte Karte, nicht maßstabsgetreu.', didYouKnow: 'Schon gewusst?', enlargePhoto: 'Foto vergrößern', closePhoto: 'Foto schließen',
     safety: 'Ein sanfter Sicherheitshinweis', conduct: 'Bleib auf den Wegen, halte Abstand, nimm nichts mit und beachte die Schilder im Naturschutzgebiet.',
     save: 'Habe ich entdeckt', saved: 'In deinen Notizen gespeichert', checklist: 'Natur-Notizen', empty: 'Noch nichts entdeckt. Die erste kleine Entdeckung wartet auf dich.',
     notes: 'Funde', clear: 'Notizen löschen', export: 'Notizen exportieren', about: 'Über diese kleine App', settings: 'Einstellungen',
@@ -142,14 +142,14 @@ const copy = {
     ready: 'Nach dem ersten Laden offline nutzbar', noGps: 'Dieser Browser stellt keinen Standort bereit. Wähle unten ein Gebiet.',
     insecureLocation: 'Der Standort funktioniert nur über eine sichere HTTPS-Seite (oder localhost). Öffne die HTTPS-Adresse und versuche es erneut.',
     locationDenied: 'Die Standortfreigabe ist blockiert. Öffne die Website-Einstellungen neben der Adressleiste, erlaube den Standort und lade diese Seite neu.',
-    permissionSteps: 'Wenn Safari keinen Dialog gezeigt hat, ist vielleicht eine frühere Auswahl gespeichert. Mac: Safari → Einstellungen → Websites → Standort und für diese Website „Fragen“ oder „Erlauben“ wählen. iPhone/iPad: Seitenmenü (aA) → Website-Einstellungen → Standort und „Fragen“ oder „Erlauben“ wählen. Aktiviere außerdem Einstellungen → Datenschutz & Sicherheit → Ortungsdienste und versuche es erneut.',
-    locationServicesHelp: 'Die Safari-Freigabe ist bereits erteilt, aber das Gerät hat keine Position geliefert. Mac: Systemeinstellungen → Datenschutz & Sicherheit → Ortungsdienste aktivieren und Safari erlauben. iPhone/iPad: Einstellungen → Datenschutz & Sicherheit → Ortungsdienste → Safari-Websites; „Beim Verwenden“ wählen und, falls angezeigt, „Genauer Standort“ aktivieren. Danach erneut versuchen; die App wartet bis zu etwa einer Minute.',
+    permissionSteps: 'Wenn dein Browser keinen Dialog gezeigt hat, ist vielleicht eine frühere Auswahl gespeichert. Öffne die Einstellungen dieser Website (Schloss- oder Seiteneinstellungs-Symbol neben der Adressleiste oder Browser-Einstellungen → Website-Einstellungen → Standort) und stelle den Standort auf „Fragen“ oder „Erlauben“. Aktiviere außerdem die Ortungsdienste für dein Gerät und deinen Browser und versuche es erneut.',
+    locationServicesHelp: 'Die Browser-Freigabe ist bereits erteilt, aber das Gerät hat keine Position geliefert. Aktiviere die Ortungsdienste in den Geräteeinstellungen und erlaube sie für deinen Browser („Beim Verwenden“ wählen und, falls angezeigt, „Genauer Standort“ aktivieren). Danach erneut versuchen; die App wartet bis zu etwa einer Minute.',
     chromeHelp: 'Chrome-Hilfe', firefoxHelp: 'Firefox-Hilfe', safariHelp: 'Safari-Hilfe (Mac)', appleLocationHelp: 'Ortungsdienste auf iPhone/iPad',
     locationUnavailable: 'Der Browser durfte den Standort abrufen, konnte ihn aber nicht bestimmen. Aktiviere die Ortungsdienste des Geräts und versuche es erneut oder wähle unten ein Gebiet.',
     locationTimeout: 'Der Browser durfte zugreifen, aber das Gerät hat nicht rechtzeitig einen Standort geliefert. Prüfe die System-Ortungsdienste und versuche es erneut oder wähle ein Gebiet.',
     locationSuccess: 'Ungefährer Browser-Standort empfangen und im Arbeitsspeicher der App genutzt.',
     outsideBerlin: 'Das scheint außerhalb Berlins zu sein. Der Startpunkt wurde zum nächsten öffentlichen Grünweg verschoben.',
-    inaccurate: 'Safari hat einen zu ungenauen Standort für Berlin geliefert. Aktiviere, falls verfügbar, den genauen Standort oder wähle unten ein Gebiet.',
+    inaccurate: 'Dein Browser hat einen zu ungenauen Standort für Berlin geliefert. Aktiviere, falls verfügbar, den genauen Standort oder wähle unten ein Gebiet.',
     noLocation: 'Standort konnte nicht gelesen werden. Wähle unten ein Gebiet.',
     storageError: 'Deine Natur-Notizen konnten auf diesem Gerät nicht gelesen oder gespeichert werden.',
     offlineCheckError: 'Der Offline-Cache konnte nicht geprüft werden. Lass die Seite geöffnet, bis sie fertig geladen ist.',
@@ -187,11 +187,11 @@ const copy = {
     location: 'Ton coin de Berlin', locate: 'Utiliser ma position', locating: 'Je te cherche…', change: 'Choisir un quartier proche', areaGridCaption: '28 zones approximatives',
     locationSource: 'Fournie par le navigateur · utilisée en mémoire par l’appli',
     minutes: 'Tu as combien de temps ?', min: 'min', weather: 'Conditions pour cette sortie', currentWeather: 'Prévisions actuelles à Berlin', start: 'Trouver ma petite aventure',
-    privacy: 'Appuie sur « Utiliser ma position » pour demander à Safari une position ponctuelle. L’appli l’utilise en mémoire et ne l’envoie ni ne l’enregistre.',
+    privacy: 'Appuie sur « Utiliser ma position » pour demander ta position ponctuelle à ton navigateur. L’appli l’utilise en mémoire et ne l’envoie ni ne l’enregistre.',
     locationFooter: 'L’appli n’envoie ni n’enregistre ta position',
     mission: 'Ta note nature', back: 'Modifier mon programme', today: 'TA PETITE AVENTURE DU JOUR',
     head: 'Un petit détour tout vert', walk: 'aller-retour estimé à pied', observe: 'observation', oneWay: 'à vol d’oiseau, aller simple', nearby: 'à proximité', away: 'à pied', route: 'Ta destination',
-    targets: 'Ouvre l’œil pour', gems: 'Petits trésors', fieldcraft: 'Un mini-conseil de terrain', didYouKnow: 'Le savais-tu ?', enlargePhoto: 'Agrandir la photo', closePhoto: 'Fermer la photo',
+    targets: 'Ouvre l’œil pour', gems: 'Petits trésors', fieldcraft: 'Un mini-conseil de terrain', mapLegend: 'Tu es le point vert ; l’anneau est ton rayon de marche (environ {r}). Carte stylisée, pas à l’échelle.', didYouKnow: 'Le savais-tu ?', enlargePhoto: 'Agrandir la photo', closePhoto: 'Fermer la photo',
     safety: 'Un petit rappel de sécurité', conduct: 'Reste sur les sentiers, garde tes distances, ne prends rien et respecte les panneaux des réserves.',
     save: 'Je l’ai aperçu', saved: 'Ajouté à tes notes', checklist: 'Notes de terrain', empty: 'Rien aperçu pour le moment. Ta première découverte t’attend.',
     notes: 'observations', clear: 'Effacer les notes', export: 'Exporter les notes', about: 'À propos de cette appli', settings: 'Réglages',
@@ -221,14 +221,14 @@ const copy = {
     ready: 'Fonctionne hors ligne après le premier chargement', noGps: 'Ce navigateur ne fournit pas la position. Choisis un quartier ci-dessous.',
     insecureLocation: 'La position fonctionne uniquement sur une page HTTPS sécurisée (ou localhost). Ouvre l’adresse HTTPS du site puis réessaie.',
     locationDenied: 'La permission de localisation est bloquée. Dans les contrôles du site près de la barre d’adresse, autorise la position puis recharge cette page.',
-    permissionSteps: 'Si Safari n’a pas affiché de demande, un ancien choix est peut-être mémorisé. Mac : Safari → Réglages → Sites web → Position, puis règle ce site sur Demander ou Autoriser. iPhone/iPad : menu de page (aA) → Réglages du site web → Position, puis Demander ou Autoriser. Vérifie aussi que Réglages → Confidentialité et sécurité → Service de localisation est activé.',
-    locationServicesHelp: 'Safari a déjà l’autorisation, mais l’appareil n’a pas fourni de position. Mac : Réglages Système → Confidentialité et sécurité → Service de localisation ; active-le et autorise Safari. iPhone/iPad : Réglages → Confidentialité et sécurité → Service de localisation → Sites web Safari ; choisis « Lorsque l’app est active » et active « Position exacte » si proposé. Réessaie ensuite ; l’appli attend jusqu’à environ une minute.',
+    permissionSteps: 'Si ton navigateur n’a pas affiché de demande, un ancien choix est peut-être mémorisé. Ouvre les réglages de ce site (icône de cadenas ou de réglages à côté de la barre d’adresse, ou Réglages du navigateur → Paramètres des sites → Position) et choisis Demander ou Autoriser. Vérifie aussi que les services de localisation sont activés pour ton appareil et ton navigateur, puis réessaie.',
+    locationServicesHelp: 'Le navigateur a déjà l’autorisation, mais l’appareil n’a pas fourni de position. Active les services de localisation dans les réglages de l’appareil et autorise-les pour ton navigateur (choisis « Lorsque l’app est active » et active « Position exacte » si proposé). Réessaie ensuite ; l’appli attend jusqu’à environ une minute.',
     chromeHelp: 'Aide Chrome', firefoxHelp: 'Aide Firefox', safariHelp: 'Aide Safari sur Mac', appleLocationHelp: 'Service de localisation iPhone/iPad',
     locationUnavailable: 'Le navigateur a autorisé la demande, mais n’a pas trouvé ta position. Active les services de localisation de ton appareil, puis réessaie ou choisis une zone ci-dessous.',
     locationTimeout: 'Le navigateur était autorisé, mais l’appareil n’a pas fourni de position à temps. Vérifie les services système, puis réessaie ou choisis une zone.',
     locationSuccess: 'Position approximative reçue du navigateur et utilisée en mémoire par l’appli.',
     outsideBerlin: 'Cela semble hors de Berlin. Le départ a été déplacé au chemin vert public le plus proche.',
-    inaccurate: 'Safari a fourni une position trop imprécise pour Berlin. Active la position exacte si possible, ou choisis un quartier ci-dessous.',
+    inaccurate: 'Ton navigateur a fourni une position trop imprécise pour Berlin. Active la position exacte si possible, ou choisis un quartier ci-dessous.',
     noLocation: 'Position introuvable. Choisis un quartier ci-dessous.',
     storageError: 'Impossible de lire ou d’enregistrer tes notes sur cet appareil.',
     offlineCheckError: 'Le cache hors ligne n’a pas pu être vérifié. Garde cette page ouverte pendant le chargement.',
@@ -368,6 +368,7 @@ function App() {
   const [selectedArea, setSelectedArea] = useState(defaultArea.id);
   const [locationLabel, setLocationLabel] = useState(defaultArea.name);
   const [message, setMessage] = useState('');
+  const [locationFixed, setLocationFixed] = useState(false);
   const [locating, setLocating] = useState(false);
   const [naturePack, setNaturePack] = useState<NaturePack | null>(null);
   const [dataPackStatus, setDataPackStatus] = useState<'loading' | 'demo' | 'ready' | 'error'>('loading');
@@ -461,10 +462,17 @@ function App() {
     };
   }, []);
 
+  const radiusKm = missionBudget(minutes).radiusKm;
+  const mapPoint = {
+    x: Math.min(320, Math.max(0, 160 + (location.lng - 13.405) / 0.00085)),
+    y: Math.min(220, Math.max(0, 110 - (location.lat - 52.52) / 0.00065)),
+  };
+
   function selectArea(id: string) {
     const cell = pickerCells.find((item) => item.id === id);
     if (!cell) return;
     setSelectedArea(id);
+    setLocationFixed(false);
     setLocation({ lat: cell.lat, lng: cell.lng });
     setLocationLabel(cell.name);
     setMessage('');
@@ -478,6 +486,7 @@ function App() {
 
   async function useMyLocation() {
     setLocating(true);
+    setLocationFixed(false);
     setMessage('');
     try {
       const { coordinates: point, accuracyMeters } = await requestDeviceLocation(navigator.geolocation, window.isSecureContext);
@@ -493,6 +502,7 @@ function App() {
       setLocation(point);
       setLocationLabel('Your location');
       setSelectedArea('');
+      setLocationFixed(true);
       setMessage(`${t.locationSuccess} (~${Math.max(50, Math.round(accuracyMeters / 50) * 50)} m).`);
     } catch (error) {
       if (!(error instanceof LocationRequestError)) {
@@ -680,7 +690,7 @@ function App() {
             <div className="plan-card">
               <div className="card-heading"><div><span className="eyebrow">{t.location}</span><h2>Let’s find your patch.</h2></div><span className="card-stamp"><MapPin size={17} /></span></div>
               <div className="location-display"><div className="location-icon"><MapPin size={17} /></div><div><strong>{locationLabel}</strong><small>{t.locationSource}</small></div><button className="text-button" onClick={useMyLocation} disabled={locating}><Navigation size={14} />{locating ? t.locating : t.locate}</button></div>
-              {message && <div className="inline-message" role="status"><CircleHelp size={16} />{message}</div>}
+              {message && <div className="inline-message" role="status">{locationFixed ? <Check size={16} /> : <CircleHelp size={16} />}{message}</div>}
               {(message === t.insecureLocation || message === t.noGps || message === t.locationDenied || message === t.locationTimeout || message === t.locationUnavailable || message === t.inaccurate) && (
                 <div className="permission-help">
                   <p>{message === t.locationDenied ? t.permissionSteps : message === t.insecureLocation ? t.insecureLocation : message === t.noGps ? t.noGps : t.locationServicesHelp}</p>
@@ -696,8 +706,11 @@ function App() {
               <div className="offline-map" role="group" aria-label={t.change}>
                 <svg className="map-land" viewBox="0 0 320 220" aria-hidden="true"><path d="M97 23 151 17 198 26 227 48 266 51 285 77 276 101 293 119 272 145 267 178 234 192 203 187 179 206 144 198 116 207 88 185 64 176 56 149 33 135 44 109 34 83 59 63 63 40Z" /></svg>
                 <span className="map-river river-one" /><span className="map-river river-two" />
+                <svg className="map-radius" viewBox="0 0 320 220" preserveAspectRatio="none" aria-hidden="true"><ellipse cx={mapPoint.x} cy={mapPoint.y} rx={radiusKm * 1000 / 57.6} ry={radiusKm * 1000 / 72.2} /></svg>
+                <span className="map-you" style={{ left: `${(mapPoint.x / 320) * 100}%`, top: `${(mapPoint.y / 220) * 100}%` }} aria-hidden="true" />
                 {pickerCells.map((cell, index) => <button key={cell.id} className={`hex-cell ${selectedArea === cell.id ? 'is-selected' : ''}`} style={{ left: `${(cell.x / 320) * 100}%`, top: `${(cell.y / 220) * 100}%` }} onClick={() => selectArea(cell.id)} aria-pressed={selectedArea === cell.id} aria-label={cell.name} title={cell.name}><span>{String(index + 1).padStart(2, '0')}</span></button>)}
               </div>
+              <p className="map-legend">{t.mapLegend.replace('{r}', formatDistance(radiusKm, language))}</p>
               <p className="privacy-note"><ShieldCheck size={15} />{t.privacy}</p>
               <div className="form-divider" />
               <div className="setting-row"><div><span className="eyebrow">{t.minutes}</span><span className="setting-hint">A gentle walk, at your pace.</span></div><div className="number-input"><input type="number" min={5} max={360} value={minutes} onChange={(event) => setMinutes(Number(event.target.value))} aria-label={t.minutes} /><span>{t.min}</span></div></div>
