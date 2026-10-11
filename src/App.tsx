@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { buildMission, cardinalDirection, formatDistance, type Coordinates, type Mission } from './engine';
 import { anchors, pickerCells, species, speciesDisplayName, weatherOptions, type Anchor, type Language, type Species, type Weather } from './data';
+import speciesImageCredits from './speciesImageCredits.json';
 import { loadNaturePack, type NaturePack } from './dataPack';
 import { LocationRequestError, requestDeviceLocation } from './geolocation';
 import { currentForecastHour, currentForecastWeather, forecastAgeLabel, getBerlinForecast, outingWeather, type ForecastResult } from './weather';
@@ -24,7 +25,7 @@ const copy = {
     location: 'Your patch of Berlin', locate: 'Use my location', locating: 'Finding you…', change: 'Choose a nearby area', areaGridCaption: '28 approximate grid areas',
     locationSource: 'Provided by your browser · used in app memory',
     minutes: 'How long have you got?', min: 'min', weather: 'Conditions for this outing', currentWeather: 'Current Berlin forecast', start: 'Find my little adventure',
-    privacy: 'Your browser gives this page your location when you allow it. The app uses it in memory and does not send or save it.',
+    privacy: 'Tap “Use my location” to ask Safari for a one-time location fix. The app uses it in memory and does not send or save it.',
     locationFooter: 'App code does not send or save location',
     mission: 'Your nature note', back: 'Change my plan', today: 'TODAY’S LITTLE ADVENTURE',
     head: 'A green little detour', walk: 'est. round-trip walk', observe: 'noticing', oneWay: 'straight-line, one way', nearby: 'nearby', away: 'away', route: 'Your destination',
@@ -55,21 +56,23 @@ const copy = {
     nameLanguageLabels: { en: 'English common name', de: 'German common name', fr: 'French common name' },
     nearbyEvidenceNote: 'Each suggested species has records in the approximate grid cell around your start—not necessarily at this exact spot or today.',
     sourceLink: 'GBIF dataset and citation',
-    ready: 'Works offline after first load', noGps: 'Location needs a secure HTTPS page (or localhost) and browser support. Choose an area below.',
+    ready: 'Works offline after first load', noGps: 'This browser does not provide location. Choose an area below.',
+    insecureLocation: 'Location only works on a secure HTTPS page (or localhost). Open the site’s HTTPS address, then try again.',
     locationDenied: 'Location permission is blocked. Use the site controls beside the address bar, set Location to Allow, then reload this page.',
-    permissionSteps: 'In Safari, open Safari Settings → Websites → Location. On a phone, open the browser’s site settings. Then return here and try again.',
-    locationServicesHelp: 'On macOS, also check System Settings → Privacy & Security → Location Services and allow your browser. Browser permission alone cannot turn on device location services.',
-    chromeHelp: 'Chrome help', firefoxHelp: 'Firefox help', safariHelp: 'Safari help',
+    permissionSteps: 'If Safari did not show a prompt, it may remember an earlier choice. On Mac: Safari → Settings → Websites → Location, set this site to Ask or Allow. On iPhone/iPad: tap the page menu (aA) → Website Settings → Location, set it to Ask or Allow. Also make sure Settings → Privacy & Security → Location Services is on, then return here and try again.',
+    locationServicesHelp: 'Safari permission is already allowed, but the device did not provide a fix. Mac: System Settings → Privacy & Security → Location Services; turn it on and allow Safari. iPhone/iPad: Settings → Privacy & Security → Location Services → Safari Websites; choose While Using and enable Precise Location if shown. Then try again; the app waits up to about a minute.',
+    chromeHelp: 'Chrome help', firefoxHelp: 'Firefox help', safariHelp: 'Safari on Mac help', appleLocationHelp: 'iPhone/iPad Location Services',
     locationUnavailable: 'Your browser allowed the request but could not get a location. Turn on your device’s Location Services, then try again; you can also choose an area below.',
     locationTimeout: 'The browser permission is allowed, but the device did not return a location in time. Check system Location Services and try again, or choose an area below.',
     locationSuccess: 'Approximate browser location received and used in app memory.',
     outsideBerlin: 'That looks outside Berlin. I’ve moved the start to the nearest public green path.',
-    inaccurate: 'That location was too fuzzy to plan from. Pick a nearby area below.',
+    inaccurate: 'Safari returned a location too imprecise to place within Berlin. Turn on Precise Location if available, or choose an area below.',
     noLocation: 'Could not read your location. Choose an area below.',
     storageError: 'Could not read or save your field notes on this device.',
     offlineCheckError: 'The offline cache could not be checked. Keep this page open while it finishes loading.',
     weatherLoading: 'Checking Berlin weather…',
     weatherError: 'Live weather is unavailable. Choose conditions for your outing below.',
+    retryWeather: 'Retry weather',
     weatherLive: 'Fixed Berlin forecast',
     weatherCached: 'Berlin forecast saved on this phone',
     weatherStale: 'Saved forecast is over 3 hours old. Choose current conditions.',
@@ -93,7 +96,7 @@ const copy = {
     location: 'Dein Stück Berlin', locate: 'Meinen Standort nutzen', locating: 'Standort wird gesucht…', change: 'Gebiet in der Nähe wählen', areaGridCaption: '28 ungefähre Bereiche',
     locationSource: 'Vom Browser bereitgestellt · in der App im Arbeitsspeicher genutzt',
     minutes: 'Wie viel Zeit hast du?', min: 'Min.', weather: 'Bedingungen für deinen Ausflug', currentWeather: 'Aktuelle Berliner Vorhersage', start: 'Mein kleines Abenteuer finden',
-    privacy: 'Dein Browser gibt dieser Seite deinen Standort frei, wenn du zustimmst. Die App nutzt ihn im Arbeitsspeicher und sendet oder speichert ihn nicht.',
+    privacy: 'Tippe auf „Meinen Standort nutzen“, um Safari einmalig nach deinem Standort zu fragen. Die App nutzt ihn im Arbeitsspeicher und sendet oder speichert ihn nicht.',
     locationFooter: 'Die App sendet oder speichert den Standort nicht',
     mission: 'Deine Natur-Notiz', back: 'Plan ändern', today: 'DEIN KLEINES ABENTEUER',
     head: 'Ein grüner kleiner Umweg', walk: 'geschätzter Hin- und Rückweg', observe: 'Entdecken', oneWay: 'Luftlinie, einfache Strecke', nearby: 'in der Nähe', away: 'entfernt', route: 'Dein Ziel',
@@ -124,21 +127,23 @@ const copy = {
     nameLanguageLabels: { en: 'Englischer Trivialname', de: 'Deutscher Trivialname', fr: 'Französischer Trivialname' },
     nearbyEvidenceNote: 'Für jede vorgeschlagene Art gibt es Meldungen in der ungefähren Rasterzelle um deinen Start – nicht zwingend genau an diesem Ort oder heute.',
     sourceLink: 'GBIF-Datensatz und Zitat',
-    ready: 'Nach dem ersten Laden offline nutzbar', noGps: 'Standort benötigt eine sichere HTTPS-Seite (oder localhost) und Browser-Unterstützung. Wähle unten ein Gebiet.',
+    ready: 'Nach dem ersten Laden offline nutzbar', noGps: 'Dieser Browser stellt keinen Standort bereit. Wähle unten ein Gebiet.',
+    insecureLocation: 'Der Standort funktioniert nur über eine sichere HTTPS-Seite (oder localhost). Öffne die HTTPS-Adresse und versuche es erneut.',
     locationDenied: 'Die Standortfreigabe ist blockiert. Öffne die Website-Einstellungen neben der Adressleiste, erlaube den Standort und lade diese Seite neu.',
-    permissionSteps: 'In Safari: Safari-Einstellungen → Websites → Standort. Auf dem Handy öffne die Website-Einstellungen des Browsers. Kehre dann hierher zurück.',
-    locationServicesHelp: 'Prüfe unter macOS zusätzlich Systemeinstellungen → Datenschutz & Sicherheit → Ortungsdienste und erlaube deinem Browser den Zugriff. Die Browserfreigabe allein schaltet die Geräteortung nicht ein.',
-    chromeHelp: 'Chrome-Hilfe', firefoxHelp: 'Firefox-Hilfe', safariHelp: 'Safari-Hilfe',
+    permissionSteps: 'Wenn Safari keinen Dialog gezeigt hat, ist vielleicht eine frühere Auswahl gespeichert. Mac: Safari → Einstellungen → Websites → Standort und für diese Website „Fragen“ oder „Erlauben“ wählen. iPhone/iPad: Seitenmenü (aA) → Website-Einstellungen → Standort und „Fragen“ oder „Erlauben“ wählen. Aktiviere außerdem Einstellungen → Datenschutz & Sicherheit → Ortungsdienste und versuche es erneut.',
+    locationServicesHelp: 'Die Safari-Freigabe ist bereits erteilt, aber das Gerät hat keine Position geliefert. Mac: Systemeinstellungen → Datenschutz & Sicherheit → Ortungsdienste aktivieren und Safari erlauben. iPhone/iPad: Einstellungen → Datenschutz & Sicherheit → Ortungsdienste → Safari-Websites; „Beim Verwenden“ wählen und, falls angezeigt, „Genauer Standort“ aktivieren. Danach erneut versuchen; die App wartet bis zu etwa einer Minute.',
+    chromeHelp: 'Chrome-Hilfe', firefoxHelp: 'Firefox-Hilfe', safariHelp: 'Safari-Hilfe (Mac)', appleLocationHelp: 'Ortungsdienste auf iPhone/iPad',
     locationUnavailable: 'Der Browser durfte den Standort abrufen, konnte ihn aber nicht bestimmen. Aktiviere die Ortungsdienste des Geräts und versuche es erneut oder wähle unten ein Gebiet.',
     locationTimeout: 'Der Browser durfte zugreifen, aber das Gerät hat nicht rechtzeitig einen Standort geliefert. Prüfe die System-Ortungsdienste und versuche es erneut oder wähle ein Gebiet.',
     locationSuccess: 'Ungefährer Browser-Standort empfangen und im Arbeitsspeicher der App genutzt.',
     outsideBerlin: 'Das scheint außerhalb Berlins zu sein. Der Startpunkt wurde zum nächsten öffentlichen Grünweg verschoben.',
-    inaccurate: 'Der Standort war zu ungenau. Wähle unten ein Gebiet in der Nähe.',
+    inaccurate: 'Safari hat einen zu ungenauen Standort für Berlin geliefert. Aktiviere, falls verfügbar, den genauen Standort oder wähle unten ein Gebiet.',
     noLocation: 'Standort konnte nicht gelesen werden. Wähle unten ein Gebiet.',
     storageError: 'Deine Natur-Notizen konnten auf diesem Gerät nicht gelesen oder gespeichert werden.',
     offlineCheckError: 'Der Offline-Cache konnte nicht geprüft werden. Lass die Seite geöffnet, bis sie fertig geladen ist.',
     weatherLoading: 'Berliner Wetter wird abgerufen…',
     weatherError: 'Live-Wetter nicht verfügbar. Wähle unten die Bedingungen für deinen Ausflug.',
+    retryWeather: 'Wetter erneut laden',
     weatherLive: 'Berliner Wettervorhersage',
     weatherCached: 'Berliner Wettervorhersage auf diesem Gerät gespeichert',
     weatherStale: 'Vorhersage älter als 3 Stunden. Wähle die aktuellen Bedingungen.',
@@ -162,7 +167,7 @@ const copy = {
     location: 'Ton coin de Berlin', locate: 'Utiliser ma position', locating: 'Je te cherche…', change: 'Choisir un quartier proche', areaGridCaption: '28 zones approximatives',
     locationSource: 'Fournie par le navigateur · utilisée en mémoire par l’appli',
     minutes: 'Tu as combien de temps ?', min: 'min', weather: 'Conditions pour cette sortie', currentWeather: 'Prévisions actuelles à Berlin', start: 'Trouver ma petite aventure',
-    privacy: 'Ton navigateur transmet ta position à cette page si tu l’autorises. L’appli l’utilise en mémoire et ne l’envoie ni ne l’enregistre.',
+    privacy: 'Appuie sur « Utiliser ma position » pour demander à Safari une position ponctuelle. L’appli l’utilise en mémoire et ne l’envoie ni ne l’enregistre.',
     locationFooter: 'L’appli n’envoie ni n’enregistre ta position',
     mission: 'Ta note nature', back: 'Modifier mon programme', today: 'TA PETITE AVENTURE DU JOUR',
     head: 'Un petit détour tout vert', walk: 'aller-retour estimé à pied', observe: 'observation', oneWay: 'à vol d’oiseau, aller simple', nearby: 'à proximité', away: 'à pied', route: 'Ta destination',
@@ -193,21 +198,23 @@ const copy = {
     nameLanguageLabels: { en: 'Nom courant anglais', de: 'Nom courant allemand', fr: 'Nom courant français' },
     nearbyEvidenceNote: 'Chaque espèce proposée a des signalements dans la maille approximative autour du départ, pas nécessairement à cet endroit précis ni aujourd’hui.',
     sourceLink: 'Jeu de données et citation GBIF',
-    ready: 'Fonctionne hors ligne après le premier chargement', noGps: 'La position nécessite une page HTTPS sécurisée (ou localhost) et un navigateur compatible. Choisis une zone ci-dessous.',
+    ready: 'Fonctionne hors ligne après le premier chargement', noGps: 'Ce navigateur ne fournit pas la position. Choisis un quartier ci-dessous.',
+    insecureLocation: 'La position fonctionne uniquement sur une page HTTPS sécurisée (ou localhost). Ouvre l’adresse HTTPS du site puis réessaie.',
     locationDenied: 'La permission de localisation est bloquée. Dans les contrôles du site près de la barre d’adresse, autorise la position puis recharge cette page.',
-    permissionSteps: 'Dans Safari, ouvre Réglages Safari → Sites web → Position. Sur téléphone, ouvre les réglages du site dans le navigateur, puis réessaie.',
-    locationServicesHelp: 'Sur macOS, vérifie aussi Réglages Système → Confidentialité et sécurité → Service de localisation et autorise ton navigateur. L’autorisation du navigateur ne peut pas activer le service système.',
-    chromeHelp: 'Aide Chrome', firefoxHelp: 'Aide Firefox', safariHelp: 'Aide Safari',
+    permissionSteps: 'Si Safari n’a pas affiché de demande, un ancien choix est peut-être mémorisé. Mac : Safari → Réglages → Sites web → Position, puis règle ce site sur Demander ou Autoriser. iPhone/iPad : menu de page (aA) → Réglages du site web → Position, puis Demander ou Autoriser. Vérifie aussi que Réglages → Confidentialité et sécurité → Service de localisation est activé.',
+    locationServicesHelp: 'Safari a déjà l’autorisation, mais l’appareil n’a pas fourni de position. Mac : Réglages Système → Confidentialité et sécurité → Service de localisation ; active-le et autorise Safari. iPhone/iPad : Réglages → Confidentialité et sécurité → Service de localisation → Sites web Safari ; choisis « Lorsque l’app est active » et active « Position exacte » si proposé. Réessaie ensuite ; l’appli attend jusqu’à environ une minute.',
+    chromeHelp: 'Aide Chrome', firefoxHelp: 'Aide Firefox', safariHelp: 'Aide Safari sur Mac', appleLocationHelp: 'Service de localisation iPhone/iPad',
     locationUnavailable: 'Le navigateur a autorisé la demande, mais n’a pas trouvé ta position. Active les services de localisation de ton appareil, puis réessaie ou choisis une zone ci-dessous.',
     locationTimeout: 'Le navigateur était autorisé, mais l’appareil n’a pas fourni de position à temps. Vérifie les services système, puis réessaie ou choisis une zone.',
     locationSuccess: 'Position approximative reçue du navigateur et utilisée en mémoire par l’appli.',
     outsideBerlin: 'Cela semble hors de Berlin. Le départ a été déplacé au chemin vert public le plus proche.',
-    inaccurate: 'Position trop imprécise. Choisis un quartier proche ci-dessous.',
+    inaccurate: 'Safari a fourni une position trop imprécise pour Berlin. Active la position exacte si possible, ou choisis un quartier ci-dessous.',
     noLocation: 'Position introuvable. Choisis un quartier ci-dessous.',
     storageError: 'Impossible de lire ou d’enregistrer tes notes sur cet appareil.',
     offlineCheckError: 'Le cache hors ligne n’a pas pu être vérifié. Garde cette page ouverte pendant le chargement.',
     weatherLoading: 'Consultation de la météo de Berlin…',
     weatherError: 'Météo en direct indisponible. Choisis les conditions de ta sortie ci-dessous.',
+    retryWeather: 'Réessayer la météo',
     weatherLive: 'Prévision météo fixe de Berlin',
     weatherCached: 'Prévision de Berlin enregistrée sur ce téléphone',
     weatherStale: 'Prévision enregistrée depuis plus de 3 h. Choisis les conditions actuelles.',
@@ -248,13 +255,21 @@ function localDateStamp() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
+function photoCreditFor(item: Species) {
+  return item.scientific_name
+    ? speciesImageCredits[item.scientific_name as keyof typeof speciesImageCredits]
+    : undefined;
+}
+
 function SpeciesArt({ item, small = false }: { item: Species; small?: boolean }) {
+  const image = photoCreditFor(item);
   return (
     <div className={`species-art ${small ? 'species-art--small' : ''}`} aria-label={speciesDisplayName(item, 'en').name} role="img">
       <span className="art-sun" />
       <span className="art-emoji" aria-hidden="true">{item.emoji}</span>
       <span className="art-grass grass-one" />
       <span className="art-grass grass-two" />
+      {image && <img className="species-photo" src={image.image} alt="" loading="lazy" decoding="async" onError={(event) => event.currentTarget.remove()} />}
     </div>
   );
 }
@@ -275,6 +290,7 @@ function App() {
   const [manualWeather, setManualWeather] = useState<Weather | null>(null);
   const [forecast, setForecast] = useState<ForecastResult | null>(null);
   const [weatherStatus, setWeatherStatus] = useState<'loading' | 'error' | 'live' | 'cached' | 'stale'>('loading');
+  const [weatherErrorDetail, setWeatherErrorDetail] = useState('');
   const [location, setLocation] = useState<Coordinates>({ lat: defaultArea.lat, lng: defaultArea.lng });
   const [selectedArea, setSelectedArea] = useState(defaultArea.id);
   const [locationLabel, setLocationLabel] = useState(defaultArea.name);
@@ -306,21 +322,29 @@ function App() {
     ? outingConditions.thunderstorm ? 'thunderstorm' : outingConditions.bucket
     : weather);
 
+  async function refreshWeather(isActive: () => boolean = () => true) {
+    if (isActive()) {
+      setWeatherStatus('loading');
+      setWeatherErrorDetail('');
+    }
+    try {
+      const latest = await getBerlinForecast();
+      if (!isActive()) return;
+      setForecast(latest);
+      setWeatherStatus(latest.source);
+      setWeatherErrorDetail(latest.cacheWarning ? `Forecast works, but could not be saved offline: ${latest.cacheWarning}` : '');
+    } catch (error) {
+      if (!isActive()) return;
+      setWeatherStatus('error');
+      setWeatherErrorDetail(error instanceof Error ? error.message : String(error));
+    }
+  }
+
   useEffect(() => {
     let active = true;
-    const refreshWeather = async () => {
-      try {
-        const latest = await getBerlinForecast();
-        if (!active) return;
-        setForecast(latest);
-        setWeatherStatus(latest.source);
-      } catch {
-        if (!active) return;
-        setWeatherStatus('error');
-      }
-    };
-    void refreshWeather();
-    window.addEventListener('online', refreshWeather);
+    const refreshWhenOnline = () => void refreshWeather(() => active);
+    refreshWhenOnline();
+    window.addEventListener('online', refreshWhenOnline);
     void loadNaturePack().then((pack) => {
       if (!active) return;
       setNaturePack(pack);
@@ -357,7 +381,7 @@ function App() {
     return () => {
       active = false;
       window.removeEventListener('beforeinstallprompt', promptListener);
-      window.removeEventListener('online', refreshWeather);
+      window.removeEventListener('online', refreshWhenOnline);
     };
   }, []);
 
@@ -380,7 +404,7 @@ function App() {
     setLocating(true);
     setMessage('');
     try {
-      const { coordinates: point, accuracyMeters } = await requestDeviceLocation(navigator.geolocation);
+      const { coordinates: point, accuracyMeters } = await requestDeviceLocation(navigator.geolocation, window.isSecureContext);
       const outsideBerlin = Math.hypot((point.lat - 52.52) * 111, (point.lng - 13.405) * 68) > 24;
       if (outsideBerlin) {
         const nearest = nearestAnchor(point, naturePack?.anchors ?? anchors);
@@ -401,6 +425,7 @@ function App() {
       }
       const failureMessage = {
         unsupported: t.noGps,
+        'insecure-context': t.insecureLocation,
         'permission-denied': t.locationDenied,
         unavailable: t.locationUnavailable,
         timeout: t.locationTimeout,
@@ -568,13 +593,14 @@ function App() {
               <div className="card-heading"><div><span className="eyebrow">{t.location}</span><h2>Let’s find your patch.</h2></div><span className="card-stamp"><MapPin size={17} /></span></div>
               <div className="location-display"><div className="location-icon"><MapPin size={17} /></div><div><strong>{locationLabel}</strong><small>{t.locationSource}</small></div><button className="text-button" onClick={useMyLocation} disabled={locating}><Navigation size={14} />{locating ? t.locating : t.locate}</button></div>
               {message && <div className="inline-message" role="status"><CircleHelp size={16} />{message}</div>}
-              {(message === t.locationDenied || message === t.locationTimeout || message === t.locationUnavailable) && (
+              {(message === t.insecureLocation || message === t.noGps || message === t.locationDenied || message === t.locationTimeout || message === t.locationUnavailable || message === t.inaccurate) && (
                 <div className="permission-help">
-                  <p>{message === t.locationDenied ? t.permissionSteps : t.locationServicesHelp}</p>
+                  <p>{message === t.locationDenied ? t.permissionSteps : message === t.insecureLocation ? t.insecureLocation : message === t.noGps ? t.noGps : t.locationServicesHelp}</p>
                   <div>
                     <a href="https://support.google.com/chrome/answer/142065?hl=en" target="_blank" rel="noreferrer">{t.chromeHelp}</a>
                     <a href="https://support.mozilla.org/kb/does-firefox-share-my-location-websites" target="_blank" rel="noreferrer">{t.firefoxHelp}</a>
                     <a href="https://support.apple.com/guide/safari/websites-ibrwe2159f50/mac" target="_blank" rel="noreferrer">{t.safariHelp}</a>
+                    <a href="https://support.apple.com/guide/iphone/control-access-to-location-information-iph3dd5f9be/ios" target="_blank" rel="noreferrer">{t.appleLocationHelp}</a>
                   </div>
                 </div>
               )}
@@ -597,7 +623,8 @@ function App() {
                   <label className="weather-select"><span>{weatherIcon(missionWeather)} {t.conditions[missionWeather]}</span><select value={missionWeather} onChange={(event) => { const next = event.target.value as Weather; setWeather(next); setManualWeather(next); }} aria-label={t.weather}>{weatherOptions.map((value) => <option key={value} value={value}>{t.conditions[value]}</option>)}</select><ChevronDown size={15} /></label>
                 </div>
               </div>
-              <p className={`forecast-status forecast-status--${weatherStatus}`} aria-live="polite">{weatherStatus === 'loading' ? t.weatherLoading : weatherStatus === 'error' ? t.weatherError : weatherStatus === 'stale' ? t.weatherStale : `${weatherStatus === 'live' ? t.weatherLive : t.weatherCached} · ${t.weatherFreshness} ${forecast ? forecastAgeLabel(forecast) : ''}`}</p>
+              <p className={`forecast-status forecast-status--${weatherStatus}`} aria-live="polite">{weatherStatus === 'loading' ? t.weatherLoading : weatherStatus === 'error' ? t.weatherError : weatherStatus === 'stale' ? t.weatherStale : `${weatherStatus === 'live' ? t.weatherLive : t.weatherCached} · ${t.weatherFreshness} ${forecast ? forecastAgeLabel(forecast) : ''}`}{weatherErrorDetail && <small className="forecast-error-detail">{weatherErrorDetail}</small>}</p>
+              {weatherStatus === 'error' && <button className="weather-retry" onClick={() => void refreshWeather()}>{t.retryWeather}</button>}
               <button className="primary-button" onClick={makeMission} disabled={dataPackStatus === 'loading'}><span>{t.start}</span><ArrowRight size={18} /></button>
               <p className="starter-note">
                 {dataPackStatus === 'loading' ? t.dataLoading : dataPackStatus === 'error' ? `${t.dataError} ${dataPackError}` :
@@ -671,7 +698,8 @@ function App() {
               {notes.length ? notes.map((note, index) => {
                 const item = displaySpecies.find((entry) => entry.id === note.speciesId);
                 const displayName = item ? speciesDisplayName(item, language).name : '';
-                return item ? <div className="journal-row" key={`${note.speciesId}-${note.date}-${index}`}><SpeciesArt item={item} small /><div><strong>{displayName}</strong><span>{item.scientific_name && item.scientific_name !== displayName ? `${item.scientific_name} · ` : ''}{note.date} · {t.groups[item.group]}</span></div><Check size={17} /></div> : null;
+                const photoCredit = item ? photoCreditFor(item) : undefined;
+                return item ? <div className="journal-row" key={`${note.speciesId}-${note.date}-${index}`}><SpeciesArt item={item} small /><div><strong>{displayName}</strong><span>{item.scientific_name && item.scientific_name !== displayName ? `${item.scientific_name} · ` : ''}{note.date} · {t.groups[item.group]}</span>{photoCredit && <small className="photo-credit">{photoCredit.attribution} · {photoCredit.licenseUrl ? <a href={photoCredit.licenseUrl} target="_blank" rel="noreferrer">{photoCredit.license}</a> : photoCredit.license}</small>}</div><Check size={17} /></div> : null;
               }) : <div className="empty-journal"><div>🍃</div><p>{t.empty}</p></div>}
               <div className="journal-actions"><span>{notes.length} {t.notes}</span><button className="text-button" onClick={exportNotes} disabled={!notes.length}><ArrowDownRight size={14} />{t.export}</button><button className="text-button danger-text" onClick={clearNotes} disabled={!notes.length}><X size={14} />{t.clear}</button></div>
             </div>
@@ -739,6 +767,7 @@ function SpeciesCard({ item, index, language, onAdd, alreadyAdded, t, gem = fals
   const displayName = speciesDisplayName(item, language);
   const name = displayName.name;
   const localSupport = nearbyEvidenceCell ? item.cell_rates?.[nearbyEvidenceCell]?.support : undefined;
+  const photoCredit = photoCreditFor(item);
   return (
     <article className={`species-card ${gem ? 'gem-card' : ''}`}>
       <div className="species-number">{gem ? <span className="gem-star">✦</span> : `0${index}`}</div>
@@ -757,6 +786,15 @@ function SpeciesCard({ item, index, language, onAdd, alreadyAdded, t, gem = fals
           : item.observation_count && <small className="species-evidence">{new Intl.NumberFormat(language).format(item.observation_count)} {t.observationRecords}</small>}
         <p className="fieldcraft-label">{t.fieldcraft}</p>
         <p className="fieldcraft-copy">{item.fieldcraft[language]}</p>
+        {photoCredit && (
+          <small className="photo-credit">
+            {photoCredit.attribution}
+            {' · '}
+            {photoCredit.licenseUrl
+              ? <a href={photoCredit.licenseUrl} target="_blank" rel="noreferrer">{photoCredit.license}</a>
+              : photoCredit.license}
+          </small>
+        )}
       </div>
       <button className={`spot-button ${alreadyAdded ? 'spot-button--added' : ''}`} onClick={() => onAdd(item.id)} aria-label={`${t.save}: ${name}`} disabled={alreadyAdded}>{alreadyAdded ? <Check size={16} /> : <Leaf size={16} />}<span>{alreadyAdded ? t.saved : t.save}</span></button>
     </article>

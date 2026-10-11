@@ -1,6 +1,6 @@
 export type Coordinates = { lat: number; lng: number };
 export type LocationFix = { coordinates: Coordinates; accuracyMeters: number };
-export type LocationFailure = 'unsupported' | 'permission-denied' | 'unavailable' | 'timeout' | 'inaccurate';
+export type LocationFailure = 'unsupported' | 'insecure-context' | 'permission-denied' | 'unavailable' | 'timeout' | 'inaccurate';
 
 export class LocationRequestError extends Error {
   constructor(readonly reason: LocationFailure) {
@@ -9,11 +9,16 @@ export class LocationRequestError extends Error {
   }
 }
 
-export const MAX_LOCATION_ACCURACY_METERS = 1_000;
+export const PREFERRED_LOCATION_ACCURACY_METERS = 1_000;
+export const MAX_LOCATION_ACCURACY_METERS = 10_000;
 
 type GeolocationProvider = Pick<Geolocation, 'getCurrentPosition'>;
 
-export function requestDeviceLocation(provider: GeolocationProvider | undefined): Promise<LocationFix> {
+export function requestDeviceLocation(
+  provider: GeolocationProvider | undefined,
+  secureContext = true,
+): Promise<LocationFix> {
+  if (!secureContext) return Promise.reject(new LocationRequestError('insecure-context'));
   if (!provider) return Promise.reject(new LocationRequestError('unsupported'));
 
   const attempt = (options: PositionOptions): Promise<LocationFix> =>
@@ -51,10 +56,18 @@ export function requestDeviceLocation(provider: GeolocationProvider | undefined)
       }
     });
 
-  return attempt({ enableHighAccuracy: false, timeout: 10_000, maximumAge: 60_000 }).catch((firstError: unknown) => {
+  return attempt({ enableHighAccuracy: false, timeout: 30_000, maximumAge: 60_000 }).then(async (initialFix) => {
+    if (initialFix.accuracyMeters <= PREFERRED_LOCATION_ACCURACY_METERS) return initialFix;
+    try {
+      const preciseFix = await attempt({ enableHighAccuracy: true, timeout: 30_000, maximumAge: 0 });
+      return preciseFix.accuracyMeters < initialFix.accuracyMeters ? preciseFix : initialFix;
+    } catch {
+      return initialFix;
+    }
+  }).catch((firstError: unknown) => {
     if (!(firstError instanceof LocationRequestError) || firstError.reason === 'permission-denied') {
       throw firstError;
     }
-    return attempt({ enableHighAccuracy: true, timeout: 15_000, maximumAge: 0 });
+    return attempt({ enableHighAccuracy: true, timeout: 30_000, maximumAge: 0 });
   });
 }

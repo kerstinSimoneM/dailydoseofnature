@@ -52,7 +52,8 @@ describe('weather buckets', () => {
       }), { status: 200 });
     };
     const forecast = await getBerlinForecast(Date.parse('2026-10-10T19:00:00Z'), fetcher as typeof fetch, storage);
-    const requestedUrl = new URL(requestedUrls[0]);
+    const requestedUrl = new URL(requestedUrls[0], 'https://local.test');
+    expect(requestedUrl.pathname).toBe('/api/weather');
     expect(requestedUrl.searchParams.get('latitude')).toBe('52.52');
     expect(requestedUrl.searchParams.get('longitude')).toBe('13.405');
     expect(memory.get('nature-berlin-forecast-v1')).not.toContain('coordinates');
@@ -100,5 +101,35 @@ describe('weather buckets', () => {
     const result = await getBerlinForecast(fetchedAt + 4 * 60 * 60 * 1000, async () => { throw new Error('offline'); }, storage);
     expect(result.source).toBe('stale');
     expect(result.hours).toHaveLength(1);
+  });
+
+  it('still returns live weather when Safari storage cannot be read or written', async () => {
+    const storage = {
+      getItem: () => { throw new DOMException('Storage access is denied', 'SecurityError'); },
+      setItem: () => { throw new DOMException('Storage access is denied', 'SecurityError'); },
+    } as unknown as Storage;
+    const fetcher = async () => new Response(JSON.stringify({
+      hourly: {
+        time: [Math.floor(Date.parse('2026-10-11T10:00:00Z') / 1000)],
+        temperature_2m: [12], precipitation: [0], snowfall: [0],
+        weather_code: [1], cloud_cover: [10], wind_gusts_10m: [12],
+      },
+    }), { status: 200 });
+
+    const forecast = await getBerlinForecast(Date.parse('2026-10-11T10:00:00Z'), fetcher as typeof fetch, storage);
+
+    expect(forecast.source).toBe('live');
+    expect(forecast.hours).toHaveLength(1);
+    expect(forecast.cacheWarning).toContain('Storage access is denied');
+  });
+
+  it('preserves the network failure detail when neither cache nor forecast is available', async () => {
+    const storage = { getItem: () => null } as unknown as Storage;
+
+    await expect(getBerlinForecast(
+      Date.now(),
+      async () => { throw new TypeError('Load failed'); },
+      storage,
+    )).rejects.toThrow('Open-Meteo forecast request failed: Load failed');
   });
 });

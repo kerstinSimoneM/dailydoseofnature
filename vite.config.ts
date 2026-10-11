@@ -2,7 +2,23 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const weatherProxy = {
+  target: 'https://api.open-meteo.com',
+  changeOrigin: true,
+  rewrite: (path: string) => path.replace(/^\/api\/weather/, '/v1/forecast'),
+};
+
 export default defineConfig({
+  server: {
+    proxy: {
+      '/api/weather': weatherProxy,
+    },
+  },
+  preview: {
+    proxy: {
+      '/api/weather': weatherProxy,
+    },
+  },
   plugins: [
     react(),
     VitePWA({
@@ -43,6 +59,14 @@ export default defineConfig({
             options: {
               cacheName: 'local-model-runtime',
               expiration: { maxEntries: 2, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+          {
+            urlPattern: ({ url, sameOrigin }) => sameOrigin && /\/images\/[^/]+\.jpg$/.test(String(url)),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'species-photos',
+              expiration: { maxEntries: 250, maxAgeSeconds: 60 * 60 * 24 * 365 },
             },
           },
         ],

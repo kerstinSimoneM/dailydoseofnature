@@ -41,6 +41,7 @@ export type ForecastResult = {
   hours: ForecastHour[];
   fetchedAt: number;
   source: 'live' | 'cached' | 'stale';
+  cacheWarning?: string;
 };
 export type OutingWeather = {
   bucket: Weather;
@@ -104,34 +105,55 @@ export function berlinForecastUrl(): URL {
   return url;
 }
 
+function forecastRequestUrl(): URL | string {
+  const forecastUrl = berlinForecastUrl();
+  if (import.meta.env.DEV) return `/api/weather${forecastUrl.search}`;
+  return forecastUrl;
+}
+
 export async function getBerlinForecast(
   now = Date.now(),
   fetcher: typeof fetch = fetch,
-  storage: Storage = localStorage,
+  storage?: Storage,
 ): Promise<ForecastResult> {
-  const cached = readCache(storage);
+  let cacheStorage: Storage | undefined;
+  let cached: ForecastCache | null = null;
+  let cacheWarning: string | undefined;
+  try {
+    cacheStorage = storage ?? globalThis.localStorage;
+    cached = readCache(cacheStorage);
+  } catch (error) {
+    cacheWarning = error instanceof Error ? error.message : String(error);
+  }
+
   try {
     const controller = new AbortController();
-    const timeout = globalThis.setTimeout(() => controller.abort(), 8_000);
-    let response: Response;
+    const timeout = globalThis.setTimeout(() => controller.abort(), 20_000);
     try {
-      response = await fetcher(berlinForecastUrl(), { signal: controller.signal, credentials: 'omit' });
+      const response = await fetcher(forecastRequestUrl(), { signal: controller.signal, credentials: 'omit' });
+      if (!response.ok) throw new Error(`Open-Meteo request failed (${response.status}).`);
+      const hours = convertResponse(await response.json());
+      const cache = { fetchedAt: now, hours };
+      try {
+        cacheStorage?.setItem(CACHE_KEY, JSON.stringify(cache));
+      } catch (error) {
+        cacheWarning = error instanceof Error ? error.message : String(error);
+      }
+      return { ...cache, source: 'live', ...(cacheWarning ? { cacheWarning } : {}) };
     } finally {
       globalThis.clearTimeout(timeout);
     }
-    if (!response.ok) throw new Error(`Open-Meteo request failed (${response.status}).`);
-    const hours = convertResponse(await response.json());
-    const cache = { fetchedAt: now, hours };
-    storage.setItem(CACHE_KEY, JSON.stringify(cache));
-    return { ...cache, source: 'live' };
-  } catch (error) {
+  } catch (networkError) {
     if (cached) {
       return {
         ...cached,
         source: now - cached.fetchedAt <= MAX_CACHE_AGE_MS ? 'cached' : 'stale',
       };
     }
-    throw error;
+    const detail = networkError instanceof Error ? networkError.message : String(networkError);
+    throw new Error(cacheWarning
+      ? `Open-Meteo forecast request failed: ${detail}. Forecast cache is also unavailable: ${cacheWarning}`
+      : `Open-Meteo forecast request failed: ${detail}`);
   }
 }
 

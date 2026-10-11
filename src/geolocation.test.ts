@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   LocationRequestError,
   MAX_LOCATION_ACCURACY_METERS,
+  PREFERRED_LOCATION_ACCURACY_METERS,
   requestDeviceLocation,
 } from './geolocation';
 
@@ -29,7 +30,7 @@ describe('device geolocation', () => {
     });
     expect(getCurrentPosition.mock.calls[0][2]).toEqual({
       enableHighAccuracy: false,
-      timeout: 10_000,
+      timeout: 30_000,
       maximumAge: 60_000,
     });
   });
@@ -50,9 +51,26 @@ describe('device geolocation', () => {
     expect(getCurrentPosition).toHaveBeenCalledTimes(2);
     expect(getCurrentPosition.mock.calls[1][2]).toEqual({
       enableHighAccuracy: true,
-      timeout: 15_000,
+      timeout: 30_000,
       maximumAge: 0,
     });
+  });
+
+  it('keeps a usable coarse fix when the high-accuracy retry fails', async () => {
+    let attempt = 0;
+    const getCurrentPosition = vi.fn((
+      success: PositionCallback,
+      failure?: PositionErrorCallback | null,
+    ) => {
+      if (attempt++ === 0) success(position(52.52, 13.405, 4_000));
+      else failure?.({ code: 3, message: 'timeout' } as GeolocationPositionError);
+    });
+
+    await expect(requestDeviceLocation({ getCurrentPosition })).resolves.toEqual({
+      coordinates: { lat: 52.52, lng: 13.405 },
+      accuracyMeters: 4_000,
+    });
+    expect(getCurrentPosition).toHaveBeenCalledTimes(2);
   });
 
   it('retries temporary browser location failures but does not retry denied permission', async () => {
@@ -72,9 +90,10 @@ describe('device geolocation', () => {
   });
 
   it('rejects fixes that are too imprecise or contain invalid coordinates', async () => {
-    expect(MAX_LOCATION_ACCURACY_METERS).toBe(1_000);
+    expect(PREFERRED_LOCATION_ACCURACY_METERS).toBe(1_000);
+    expect(MAX_LOCATION_ACCURACY_METERS).toBe(10_000);
     const inaccurate = requestDeviceLocation({
-      getCurrentPosition: (success) => success(position(52.52, 13.405, 1_001)),
+      getCurrentPosition: (success) => success(position(52.52, 13.405, 10_001)),
     });
     await expect(inaccurate).rejects.toMatchObject({ reason: 'inaccurate' });
 
@@ -98,5 +117,13 @@ describe('device geolocation', () => {
   it('reports browsers without the geolocation API', async () => {
     await expect(requestDeviceLocation(undefined)).rejects.toBeInstanceOf(LocationRequestError);
     await expect(requestDeviceLocation(undefined)).rejects.toMatchObject({ reason: 'unsupported' });
+  });
+
+  it('explains that geolocation requires a secure context', async () => {
+    const getCurrentPosition = vi.fn();
+    await expect(requestDeviceLocation({ getCurrentPosition }, false)).rejects.toMatchObject({
+      reason: 'insecure-context',
+    });
+    expect(getCurrentPosition).not.toHaveBeenCalled();
   });
 });
