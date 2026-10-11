@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test('loads the app shell and generates a mission from the default Berlin area', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-10-11T12:00:00+02:00') });
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'gpu', { configurable: true, value: undefined });
     Object.defineProperty(navigator, 'deviceMemory', { configurable: true, value: 8 });
