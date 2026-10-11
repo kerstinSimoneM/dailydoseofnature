@@ -5,7 +5,7 @@ import {
   Moon, Navigation, RefreshCw, Settings2, ShieldCheck, Sun, TreePine, X,
 } from 'lucide-react';
 import { buildMission, cardinalDirection, formatDistance, missionBudget, type Coordinates, type Mission } from './engine';
-import { anchors, pickerCells, species, speciesDisplayName, weatherOptions, type Anchor, type Language, type Species, type Weather } from './data';
+import { anchors, pickerCells, species, speciesDisplayName, weatherOptions, type Language, type Species, type Weather } from './data';
 import { createPortal } from 'react-dom';
 import speciesImageCredits from './speciesImageCredits.json';
 import speciesFacts from './speciesFacts.json';
@@ -69,7 +69,7 @@ const copy = {
     locationUnavailable: 'Your browser allowed the request but could not get a location. Turn on your device’s Location Services, then try again; you can also choose an area below.',
     locationTimeout: 'The browser permission is allowed, but the device did not return a location in time. Check system Location Services and try again, or choose an area below.',
     locationSuccess: 'Approximate browser location received and used in app memory.',
-    outsideBerlin: 'That looks outside Berlin. I’ve moved the start to the nearest public green path.',
+    berlinOnly: 'Daily Dose covers Berlin only, more locations planned!',
     inaccurate: 'Your browser returned a location too imprecise to place within Berlin. Turn on Precise Location if available, or choose an area below.',
     noLocation: 'Could not read your location. Choose an area below.',
     storageError: 'Could not read or save your field notes on this device.',
@@ -148,7 +148,7 @@ const copy = {
     locationUnavailable: 'Der Browser durfte den Standort abrufen, konnte ihn aber nicht bestimmen. Aktiviere die Ortungsdienste des Geräts und versuche es erneut oder wähle unten ein Gebiet.',
     locationTimeout: 'Der Browser durfte zugreifen, aber das Gerät hat nicht rechtzeitig einen Standort geliefert. Prüfe die System-Ortungsdienste und versuche es erneut oder wähle ein Gebiet.',
     locationSuccess: 'Ungefährer Browser-Standort empfangen und im Arbeitsspeicher der App genutzt.',
-    outsideBerlin: 'Das scheint außerhalb Berlins zu sein. Der Startpunkt wurde zum nächsten öffentlichen Grünweg verschoben.',
+    berlinOnly: 'Daily Dose gibt es nur für Berlin, weitere Orte sind geplant!',
     inaccurate: 'Dein Browser hat einen zu ungenauen Standort für Berlin geliefert. Aktiviere, falls verfügbar, den genauen Standort oder wähle unten ein Gebiet.',
     noLocation: 'Standort konnte nicht gelesen werden. Wähle unten ein Gebiet.',
     storageError: 'Deine Natur-Notizen konnten auf diesem Gerät nicht gelesen oder gespeichert werden.',
@@ -227,7 +227,7 @@ const copy = {
     locationUnavailable: 'Le navigateur a autorisé la demande, mais n’a pas trouvé ta position. Active les services de localisation de ton appareil, puis réessaie ou choisis une zone ci-dessous.',
     locationTimeout: 'Le navigateur était autorisé, mais l’appareil n’a pas fourni de position à temps. Vérifie les services système, puis réessaie ou choisis une zone.',
     locationSuccess: 'Position approximative reçue du navigateur et utilisée en mémoire par l’appli.',
-    outsideBerlin: 'Cela semble hors de Berlin. Le départ a été déplacé au chemin vert public le plus proche.',
+    berlinOnly: 'Daily Dose ne couvre que Berlin, d’autres lieux sont prévus !',
     inaccurate: 'Ton navigateur a fourni une position trop imprécise pour Berlin. Active la position exacte si possible, ou choisis un quartier ci-dessous.',
     noLocation: 'Position introuvable. Choisis un quartier ci-dessous.',
     storageError: 'Impossible de lire ou d’enregistrer tes notes sur cet appareil.',
@@ -282,6 +282,11 @@ function localDateStamp() {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
+
+const BERLIN_COVERAGE_KM = 24;
+type NoticeKey = 'storageError' | 'offlineCheckError' | 'berlinOnly' | 'locationUnavailable' | 'noGps' | 'insecureLocation' | 'locationDenied' | 'locationTimeout' | 'inaccurate';
+type Notice = { kind: 'fixed'; accuracyMeters: number } | { kind: 'key'; key: NoticeKey };
+const helpKeys: NoticeKey[] = ['insecureLocation', 'noGps', 'locationDenied', 'locationTimeout', 'locationUnavailable', 'inaccurate'];
 
 function photoCreditFor(item: Species) {
   return item.scientific_name
@@ -367,8 +372,7 @@ function App() {
   const [location, setLocation] = useState<Coordinates>({ lat: defaultArea.lat, lng: defaultArea.lng });
   const [selectedArea, setSelectedArea] = useState(defaultArea.id);
   const [locationLabel, setLocationLabel] = useState(defaultArea.name);
-  const [message, setMessage] = useState('');
-  const [locationFixed, setLocationFixed] = useState(false);
+  const [notice, setNotice] = useState<Notice | null>(null);
   const [locating, setLocating] = useState(false);
   const [naturePack, setNaturePack] = useState<NaturePack | null>(null);
   const [dataPackStatus, setDataPackStatus] = useState<'loading' | 'demo' | 'ready' | 'error'>('loading');
@@ -439,7 +443,7 @@ function App() {
     try {
       setNotes(loadNotes());
     } catch {
-      setMessage(t.storageError);
+      setNotice({ kind: 'key', key: 'storageError' });
     }
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then(async (registration) => {
@@ -447,7 +451,7 @@ function App() {
         setOfflineReady(Boolean(registration.active && keys.length > 0));
       }).catch(() => {
         setOfflineReady(false);
-        setMessage(t.offlineCheckError);
+        setNotice({ kind: 'key', key: 'offlineCheckError' });
       });
     }
     const promptListener = (event: Event) => {
@@ -462,6 +466,11 @@ function App() {
     };
   }, []);
 
+  const noticeText = notice
+    ? notice.kind === 'fixed'
+      ? `${t.locationSuccess} (~${notice.accuracyMeters} m).`
+      : t[notice.key]
+    : '';
   const radiusKm = missionBudget(minutes).radiusKm;
   const mapPoint = {
     x: Math.min(320, Math.max(0, 160 + (location.lng - 13.405) / 0.00085)),
@@ -472,52 +481,39 @@ function App() {
     const cell = pickerCells.find((item) => item.id === id);
     if (!cell) return;
     setSelectedArea(id);
-    setLocationFixed(false);
     setLocation({ lat: cell.lat, lng: cell.lng });
     setLocationLabel(cell.name);
-    setMessage('');
-  }
-
-  function nearestAnchor(point: Coordinates, candidates: Anchor[] = anchors) {
-    return candidates
-      .map((anchor) => ({ anchor, distance: Math.hypot(anchor.lat - point.lat, (anchor.lng - point.lng) * Math.cos(point.lat * Math.PI / 180)) }))
-      .sort((a, b) => a.distance - b.distance)[0].anchor;
+    setNotice(null);
   }
 
   async function useMyLocation() {
     setLocating(true);
-    setLocationFixed(false);
-    setMessage('');
+    setNotice(null);
     try {
       const { coordinates: point, accuracyMeters } = await requestDeviceLocation(navigator.geolocation, window.isSecureContext);
-      const outsideBerlin = Math.hypot((point.lat - 52.52) * 111, (point.lng - 13.405) * 68) > 24;
-      if (outsideBerlin) {
-        const nearest = nearestAnchor(point, naturePack?.anchors ?? anchors);
-        setLocation({ lat: nearest.lat, lng: nearest.lng });
-        setLocationLabel(nearest.name);
-        setSelectedArea('');
-        setMessage(t.outsideBerlin);
+      const distanceToBerlinKm = Math.hypot((point.lat - 52.52) * 111, (point.lng - 13.405) * 68);
+      if (distanceToBerlinKm - missionBudget(minutes).radiusKm > BERLIN_COVERAGE_KM) {
+        setNotice({ kind: 'key', key: 'berlinOnly' });
         return;
       }
       setLocation(point);
       setLocationLabel('Your location');
       setSelectedArea('');
-      setLocationFixed(true);
-      setMessage(`${t.locationSuccess} (~${Math.max(50, Math.round(accuracyMeters / 50) * 50)} m).`);
+      setNotice({ kind: 'fixed', accuracyMeters: Math.max(50, Math.round(accuracyMeters / 50) * 50) });
     } catch (error) {
       if (!(error instanceof LocationRequestError)) {
-        setMessage(t.locationUnavailable);
+        setNotice({ kind: 'key', key: 'locationUnavailable' });
         return;
       }
-      const failureMessage = {
-        unsupported: t.noGps,
-        'insecure-context': t.insecureLocation,
-        'permission-denied': t.locationDenied,
-        unavailable: t.locationUnavailable,
-        timeout: t.locationTimeout,
-        inaccurate: t.inaccurate,
-      }[error.reason];
-      setMessage(failureMessage);
+      const failureKey: NoticeKey = {
+        unsupported: 'noGps',
+        'insecure-context': 'insecureLocation',
+        'permission-denied': 'locationDenied',
+        unavailable: 'locationUnavailable',
+        timeout: 'locationTimeout',
+        inaccurate: 'inaccurate',
+      }[error.reason] as NoticeKey;
+      setNotice({ kind: 'key', key: failureKey });
     } finally {
       setLocating(false);
     }
@@ -622,7 +618,7 @@ function App() {
       localStorage.setItem('nature-checklist', JSON.stringify(next));
       setNotes(next);
     } catch {
-      setMessage(t.storageError);
+      setNotice({ kind: 'key', key: 'storageError' });
     }
   }
 
@@ -631,7 +627,7 @@ function App() {
       localStorage.removeItem('nature-checklist');
       setNotes([]);
     } catch {
-      setMessage(t.storageError);
+      setNotice({ kind: 'key', key: 'storageError' });
     }
   }
 
@@ -690,10 +686,10 @@ function App() {
             <div className="plan-card">
               <div className="card-heading"><div><span className="eyebrow">{t.location}</span><h2>Let’s find your patch.</h2></div><span className="card-stamp"><MapPin size={17} /></span></div>
               <div className="location-display"><div className="location-icon"><MapPin size={17} /></div><div><strong>{locationLabel}</strong><small>{t.locationSource}</small></div><button className="text-button" onClick={useMyLocation} disabled={locating}><Navigation size={14} />{locating ? t.locating : t.locate}</button></div>
-              {message && <div className="inline-message" role="status">{locationFixed ? <Check size={16} /> : <CircleHelp size={16} />}{message}</div>}
-              {(message === t.insecureLocation || message === t.noGps || message === t.locationDenied || message === t.locationTimeout || message === t.locationUnavailable || message === t.inaccurate) && (
+              {notice && <div className="inline-message" role="status">{notice.kind === 'fixed' ? <Check size={16} /> : <CircleHelp size={16} />}{noticeText}</div>}
+              {notice?.kind === 'key' && helpKeys.includes(notice.key) && (
                 <div className="permission-help">
-                  <p>{message === t.locationDenied ? t.permissionSteps : message === t.insecureLocation ? t.insecureLocation : message === t.noGps ? t.noGps : t.locationServicesHelp}</p>
+                  <p>{notice.key === 'locationDenied' ? t.permissionSteps : notice.key === 'insecureLocation' ? t.insecureLocation : notice.key === 'noGps' ? t.noGps : t.locationServicesHelp}</p>
                   <div>
                     <a href="https://support.google.com/chrome/answer/142065?hl=en" target="_blank" rel="noreferrer">{t.chromeHelp}</a>
                     <a href="https://support.mozilla.org/kb/does-firefox-share-my-location-websites" target="_blank" rel="noreferrer">{t.firefoxHelp}</a>
