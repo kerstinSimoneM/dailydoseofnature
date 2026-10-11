@@ -4,7 +4,7 @@ A phone-first PWA that turns local nature observations into a small, achievable 
 
 ## Hacktoberfest Week 1
 
-Submissions are due **October 11 at 11:59 PM PDT** (October 12 at 06:59 UTC / 08:59 in Berlin). See the [official challenge post](https://dev.to/devteam/join-the-hacktoberfest-open-source-ai-challenge-week-1-touch-grass-2450-in-prizes-across-17-4pom) for submission instructions.
+Submissions are due **October 11 at 11:59 PM PDT** (October 12 at 06:59 UTC / 08:59 in Paris). See the [official challenge post](https://dev.to/devteam/join-the-hacktoberfest-open-source-ai-challenge-week-1-touch-grass-2450-in-prizes-across-17-4pom) for submission instructions.
 
 ## Deploy
 
