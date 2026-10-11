@@ -24,7 +24,7 @@ npm run build
 
 ## How it works
 
-The app ranks candidate species and destinations from locally available data, season, outing duration, and weather-related safety rules. Suggestions summarize submitted observations; they are not live sightings, abundance estimates, calibrated probabilities, or guarantees that a species is present. The 28-area picker is schematic, destinations are curated points, and the app does not provide route navigation.
+The app ranks candidate species and destinations from locally available data, season, outing duration, and weather-related safety rules. Within the walking radius for your time budget, it sends you to the reachable place whose surroundings have the strongest observed species for the season and time of day, so the best spot can be anywhere in reach, not just where you start. Suggestions summarize submitted observations; they are not live sightings, abundance estimates, calibrated probabilities, or guarantees that a species is present. The 28-area picker is schematic, destinations are named public places rather than curated routes, and the app does not provide route navigation.
 
 The optional Berlin observational pilot is built from filtered GBIF/iNaturalist records ([dataset DOI](https://doi.org/10.15468/ab3s5x)). To refresh it, install `pipeline/requirements.txt`, then run `npm run pilot-pack`. The deployed app uses the generated same-origin pack and does not contact GBIF. The pilot contains aggregate patterns, not exact occurrence coordinates. Citizen-science coverage is uneven, so rankings and coarse areas can be biased or share evidence.
 

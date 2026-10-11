@@ -200,20 +200,6 @@ export function buildMission(
   const safeForNight = nightShare > 0.5
     ? safetyEligible.filter(({ anchor }) => anchor.lit && !anchor.habitat.includes('woodland'))
     : safetyEligible;
-  const chooseReachable = (items: typeof rankedAnchors) => [...items].sort((a, b) => b.distanceKm - a.distanceKm);
-  const chosen = chooseReachable(safeForNight);
-  const anchor = chosen[0]?.anchor ?? {
-    id: 'nearby-start',
-    name: { en: 'Nature near your start', de: 'Natur am Startgebiet', fr: 'Nature près du départ' }[language],
-    lat: location.lat,
-    lng: location.lng,
-    habitat: 'no destination fits this outing; notice nature from the starting area',
-    lit: false,
-    access: 'starting-area',
-  };
-  const distanceKm = haversineKm(location, anchor);
-  const walkMinutes = estimateRoundTripWalkMinutes(distanceKm, pace);
-  const spatialPoint = catalog.speciesLocation === 'destination' ? anchor : location;
   const month = when.getMonth() + 1;
   const season = month >= 3 && month <= 5
     ? 'spring'
@@ -239,33 +225,66 @@ export function buildMission(
   const hasReleaseSignals = Boolean(catalog.builtAt || catalog.species.some((entry) =>
     entry.cell_rates || entry.time_lifts || entry.weather_lifts,
   ));
+  const namedMonth = new Intl.DateTimeFormat('en', { month: 'long' })
+    .format(new Date(2024, month - 1, 1)).toLocaleLowerCase('en');
+  const rankSpecies = (target: Anchor) => {
+    const spatialPoint = catalog.speciesLocation === 'destination' ? target : location;
+    const evidenceCell = target.id === 'nearby-start' && catalog.speciesLocation === 'both'
+      ? latLngToCell(location.lat, location.lng, 6)
+      : null;
+    return catalog.species
+      .map((entry) => {
+        const seasonalLift = entry.month_lifts?.[namedMonth] ?? monthLift(month, entry.months);
+        const placeLift = catalog.speciesLocation === 'both'
+          ? Math.sqrt(spatialRate(entry, location) * spatialRate(entry, target))
+          : spatialRate(entry, spatialPoint);
+        const timeLift = entry.time_lifts?.[hourPeriod]?.lift ?? 1;
+        const weatherLift = entry.weather_lifts?.[weather]?.lift ?? 1;
+        const illustrativeLift = hasReleaseSignals ? 1 : illustrativeContextLift(entry, target, weather, hourPeriod, budget.total);
+        return { entry, lift: placeLift * seasonalLift * timeLift * weatherLift * illustrativeLift };
+      })
+      .filter(({ entry }) => evidenceCell === null || Boolean(entry.cell_rates?.[evidenceCell]?.support))
+      .sort((a, b) => b.lift - a.lift || a.entry.id.localeCompare(b.entry.id));
+  };
+  const balance = (ranked: ReturnType<typeof rankSpecies>) => {
+    const picked: Species[] = [];
+    for (const candidate of ranked) {
+      if (picked.filter((selected) => selected.group === candidate.entry.group).length < 2) picked.push(candidate.entry);
+      if (picked.length === 3) break;
+    }
+    return picked;
+  };
+
+  // With observation evidence, send the user to the reachable place whose surroundings
+  // rank the best species; otherwise fall back to the farthest reachable place.
+  const byDistance = [...safeForNight].sort((a, b) => b.distanceKm - a.distanceKm);
+  let chosenAnchor: Anchor | undefined = byDistance[0]?.anchor;
+  if (catalog.speciesLocation === 'both' && hasReleaseSignals && byDistance.length > 1) {
+    let bestScore = -1;
+    for (const { anchor: candidate } of byDistance.slice(0, 80)) {
+      const score = rankSpecies(candidate).slice(0, 3).reduce((sum, { lift }) => sum + lift, 0);
+      if (score > bestScore) {
+        bestScore = score;
+        chosenAnchor = candidate;
+      }
+    }
+  }
+  const anchor: Anchor = chosenAnchor ?? {
+    id: 'nearby-start',
+    name: { en: 'Nature near your start', de: 'Natur am Startgebiet', fr: 'Nature près du départ' }[language],
+    lat: location.lat,
+    lng: location.lng,
+    habitat: 'no destination fits this outing; notice nature from the starting area',
+    lit: false,
+    access: 'starting-area',
+  };
+  const distanceKm = haversineKm(location, anchor);
+  const walkMinutes = estimateRoundTripWalkMinutes(distanceKm, pace);
   const nearbyEvidenceCell = anchor.id === 'nearby-start' && catalog.speciesLocation === 'both'
     ? latLngToCell(location.lat, location.lng, 6)
     : null;
-  const eligibleSpecies = catalog.species
-    .map((entry) => {
-      const namedMonth = new Intl.DateTimeFormat('en', { month: 'long' })
-        .format(new Date(2024, month - 1, 1)).toLocaleLowerCase('en');
-      const seasonalLift = entry.month_lifts?.[namedMonth] ?? monthLift(month, entry.months);
-      const placeLift = catalog.speciesLocation === 'both'
-        ? Math.sqrt(spatialRate(entry, location) * spatialRate(entry, anchor))
-        : spatialRate(entry, spatialPoint);
-      const timeLift = entry.time_lifts?.[hourPeriod]?.lift ?? 1;
-      const weatherLift = entry.weather_lifts?.[weather]?.lift ?? 1;
-      const illustrativeLift = hasReleaseSignals ? 1 : illustrativeContextLift(entry, anchor, weather, hourPeriod, budget.total);
-      return { entry, lift: placeLift * seasonalLift * timeLift * weatherLift * illustrativeLift };
-    })
-    .filter(({ entry }) =>
-      nearbyEvidenceCell === null || Boolean(entry.cell_rates?.[nearbyEvidenceCell]?.support),
-    )
-    .sort((a, b) => b.lift - a.lift || a.entry.id.localeCompare(b.entry.id));
-  const groupBalanced: Species[] = [];
-  for (const candidate of eligibleSpecies) {
-    if (groupBalanced.filter((selected) => selected.group === candidate.entry.group).length < 2) {
-      groupBalanced.push(candidate.entry);
-    }
-    if (groupBalanced.length === 3) break;
-  }
+  const eligibleSpecies = rankSpecies(anchor);
+  const groupBalanced = balance(eligibleSpecies);
   const gems = eligibleSpecies
     .map(({ entry }) => entry)
     .filter((entry) => !groupBalanced.some((selected) => selected.id === entry.id))

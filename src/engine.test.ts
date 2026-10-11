@@ -253,4 +253,27 @@ describe('mission planning helpers', () => {
     expect(centralMission.targets[0].id).toBe(candidates[0].id);
     expect(westMission.targets[0].id).toBe(candidates[1].id);
   });
+
+  it('sends the user to the reachable place with the strongest observed species, not just the farthest', () => {
+    const location = { lat: 52.52, lng: 13.405 };
+    const rich = { ...anchors[0], id: 'rich', lat: 52.5225, lng: 13.405 };
+    const poor = { ...anchors[1], id: 'poor', lat: 52.5265, lng: 13.405 };
+    const richCell = latLngToCell(rich.lat, rich.lng, 8);
+    const poorCell = latLngToCell(poor.lat, poor.lng, 8);
+    const candidates = species.slice(0, 3).map((item) => ({
+      ...item,
+      month_lifts: { june: 1 },
+      cell_rates: {
+        [richCell]: { rate: 0.5, support: 30, effort: 100, low_effort: false, parent_rate: 0.1 },
+        [poorCell]: { rate: 0.01, support: 30, effort: 100, low_effort: false, parent_rate: 0.1 },
+      },
+      baseline_rate: 0.1,
+      observation_count: 30,
+      distinct_years: 3,
+    }));
+    const catalog = { anchors: [rich, poor], species: candidates, speciesLocation: 'both' as const };
+    const mission = buildMission(location, 60, 'dry_sunny', new Date('2026-06-15T12:00:00+02:00'), 0.6, 75, 'en', {}, 'Pilot', catalog);
+    expect(haversineKm(location, poor)).toBeGreaterThan(haversineKm(location, rich));
+    expect(mission.anchor.id).toBe('rich');
+  });
 });
