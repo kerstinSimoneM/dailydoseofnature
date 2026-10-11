@@ -2,6 +2,19 @@ import { z } from 'zod';
 import { speciesDisplayName, type Language, type Species } from './data';
 import type { Mission } from './engine';
 
+const SUN_HINTS = {
+  en: ['walk toward the sun', 'keep the sun ahead on your right', 'keep the sun on your right', 'keep the sun behind your right shoulder', 'walk with the sun at your back', 'keep the sun behind your left shoulder', 'keep the sun on your left', 'keep the sun ahead on your left'],
+  de: ['geh der Sonne entgegen', 'halte die Sonne vorn rechts', 'halte die Sonne rechts von dir', 'halte die Sonne hinten rechts', 'geh mit der Sonne im Rücken', 'halte die Sonne hinten links', 'halte die Sonne links von dir', 'halte die Sonne vorn links'],
+  fr: ['marche vers le soleil', 'garde le soleil devant à droite', 'garde le soleil à ta droite', 'garde le soleil derrière à droite', 'marche avec le soleil dans le dos', 'garde le soleil derrière à gauche', 'garde le soleil à ta gauche', 'garde le soleil devant à gauche'],
+} satisfies Record<Language, string[]>;
+
+export function sunHint(mission: Mission, language: Language): string {
+  if (mission.sunBearing === null || mission.distanceKm === 0) return '';
+  const relative = (mission.sunBearing - mission.bearing + 360) % 360;
+  const phrase = SUN_HINTS[language][Math.round(relative / 45) % 8];
+  return `${phrase.charAt(0).toLocaleUpperCase(language)}${phrase.slice(1)}.`;
+}
+
 const CONDUCT = {
   en: 'Put your phone away and notice the world around you.',
   de: 'Steck dein Handy weg und nimm deine Umgebung wahr.',
@@ -9,12 +22,12 @@ const CONDUCT = {
 } satisfies Record<Language, string>;
 
 const TEMPLATE = {
-  en: (names: string[], distance: string, walk: number, direction: string) =>
-    `Take the gentler path toward ${names.join(' and ')}. It is ${distance} ${direction} in a straight line one way; allow about ${walk} minutes for the estimated round-trip walk. Let the small details come to you; no need to find everything. ${CONDUCT.en}`,
-  de: (names: string[], distance: string, walk: number, direction: string) =>
-    `Nimm den ruhigen Weg zu ${names.join(' und ')}. Luftlinie liegt das Ziel ${distance} ${direction} entfernt; plane etwa ${walk} Minuten für den geschätzten Hin- und Rückweg ein. Lass die kleinen Entdeckungen zu dir kommen. ${CONDUCT.de}`,
-  fr: (names: string[], distance: string, walk: number, direction: string) =>
-    `Prends le chemin tranquille vers ${names.join(' et ')}. C’est à ${distance} ${direction} à vol d’oiseau dans un sens ; prévois environ ${walk} minutes pour l’aller-retour estimé. Laisse les petits détails venir à toi. ${CONDUCT.fr}`,
+  en: (names: string[], distance: string, walk: number, direction: string, sun: string) =>
+    `Take the gentler path toward ${names.join(' and ')}. It is ${distance} ${direction} in a straight line one way. ${sun}Allow about ${walk} minutes for the estimated round-trip walk. Let the small details come to you; no need to find everything. ${CONDUCT.en}`,
+  de: (names: string[], distance: string, walk: number, direction: string, sun: string) =>
+    `Nimm den ruhigen Weg zu ${names.join(' und ')}. Luftlinie liegt das Ziel ${distance} ${direction} entfernt. ${sun}Plane etwa ${walk} Minuten für den geschätzten Hin- und Rückweg ein. Lass die kleinen Entdeckungen zu dir kommen. ${CONDUCT.de}`,
+  fr: (names: string[], distance: string, walk: number, direction: string, sun: string) =>
+    `Prends le chemin tranquille vers ${names.join(' et ')}. C’est à ${distance} ${direction} à vol d’oiseau dans un sens. ${sun}Prévois environ ${walk} minutes pour l’aller-retour estimé. Laisse les petits détails venir à toi. ${CONDUCT.fr}`,
 };
 
 export function templateBriefing(
@@ -31,7 +44,8 @@ export function templateBriefing(
     }[language];
   }
   const names: string[] = mission.targets.slice(0, 2).map((entry) => speciesDisplayName(entry, language).name);
-  return TEMPLATE[language](names, distance, mission.walkMinutes, direction);
+  const sun = sunHint(mission, language);
+  return TEMPLATE[language](names, distance, mission.walkMinutes, direction, sun ? `${sun} ` : '');
 }
 
 export function llmMissionPayload(mission: Mission): string {

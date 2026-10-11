@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { buildMission } from './engine';
+import { buildMission, sunCompassBearing } from './engine';
 import {
   llmMissionPayload, parseModelMissionComposition, requiredObservationCount,
-  templateBriefing, templateMissionComposition, validateModelObjective,
+  sunHint, templateBriefing, templateMissionComposition, validateModelObjective,
 } from './briefing';
 
 const mission = buildMission({ lat: 52.52, lng: 13.405 }, 40, 'dry_sunny', new Date('2026-06-15T12:00:00+02:00'));
@@ -126,5 +126,22 @@ describe('template and local model mission composition', () => {
     expect(result.issue).toBeNull();
     expect(result.composition?.steps).toHaveLength(1);
     expect(parseModelMissionComposition(validResponse(), nearbyMission).issue).toContain('time budget');
+  });
+
+  it('adds a sun-based direction hint while the sun is up and omits it after dark', () => {
+    const berlin = { lat: 52.52, lng: 13.405 };
+    const noonSun = sunCompassBearing(new Date('2026-06-21T13:10:00+02:00'), berlin);
+    expect(noonSun).toBeGreaterThan(150);
+    expect(noonSun).toBeLessThan(210);
+    expect(sunCompassBearing(new Date('2026-06-21T23:30:00+02:00'), berlin)).toBeNull();
+
+    const walkingEast = { ...mission, bearing: 90, sunBearing: 180 };
+    expect(sunHint(walkingEast, 'en')).toBe('Keep the sun on your right.');
+    expect(sunHint({ ...walkingEast, bearing: 270 }, 'en')).toBe('Keep the sun on your left.');
+    expect(sunHint({ ...walkingEast, bearing: 180 }, 'en')).toBe('Walk toward the sun.');
+    expect(sunHint({ ...walkingEast, bearing: 0 }, 'de')).toBe('Geh mit der Sonne im Rücken.');
+    expect(sunHint({ ...walkingEast, sunBearing: null }, 'en')).toBe('');
+    expect(templateBriefing(walkingEast, 'en', '300 m', 'E')).toContain('Keep the sun on your right. Allow about');
+    expect(templateBriefing({ ...walkingEast, sunBearing: null }, 'en', '300 m', 'E')).not.toContain('sun');
   });
 });

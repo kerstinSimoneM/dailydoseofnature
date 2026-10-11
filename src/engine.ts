@@ -15,6 +15,8 @@ export type Mission = {
   anchor: Anchor;
   distanceKm: number;
   bearing: number;
+  // Compass bearing of the sun when it is clearly up, otherwise null.
+  sunBearing: number | null;
   walkMinutes: number;
   observeMinutes: number;
   stops: Anchor[];
@@ -29,6 +31,12 @@ export type Mission = {
   season: Season;
   timeBudgetMinutes: number;
 };
+
+export function sunCompassBearing(date: Date, location: Coordinates): number | null {
+  const { azimuth, altitude } = SunCalc.getPosition(date, location.lat, location.lng);
+  if (altitude < (6 * Math.PI) / 180) return null;
+  return ((azimuth * 180) / Math.PI + 180 + 360) % 360;
+}
 
 export function haversineKm(from: Coordinates, to: Coordinates): number {
   const rad = (degrees: number) => (degrees * Math.PI) / 180;
@@ -295,6 +303,7 @@ export function buildMission(
     anchor,
     distanceKm,
     bearing,
+    sunBearing: sunCompassBearing(when, location),
     walkMinutes,
     observeMinutes: Math.max(0, budget.total - walkMinutes),
     stops: [anchor],
