@@ -1244,5 +1244,47 @@
     "attribution": "(c) Marie Lou Legrand, some rights reserved (CC BY-NC), uploaded by Marie Lou Legrand",
     "license": "CC BY-NC 4.0",
     "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/"
+  },
+  "Laodelphax striatellus": {
+    "scientificName": "Laodelphax striatellus",
+    "image": "/images/Laodelphax_striatellus.jpg",
+    "attribution": "James K. Lindsey, Wikimedia Commons (CC BY-SA 3.0)",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/"
+  },
+  "Mahonia aquifolium": {
+    "scientificName": "Mahonia aquifolium",
+    "image": "/images/Mahonia_aquifolium.jpg",
+    "attribution": "Kurt Stüber, Wikimedia Commons (CC BY-SA 3.0)",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/"
+  },
+  "Medicago varia": {
+    "scientificName": "Medicago varia",
+    "image": "/images/Medicago_varia.jpg",
+    "attribution": "Robert Flogaus-Faust, Wikimedia Commons (CC BY 4.0), resized",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Propylaea quatuordecimpunctata": {
+    "scientificName": "Propylaea quatuordecimpunctata",
+    "image": "/images/Propylaea_quatuordecimpunctata.jpg",
+    "attribution": "Scott Bauer, USDA Agricultural Research Service, resized",
+    "license": "Public domain",
+    "licenseUrl": null
+  },
+  "Xanthoria elegans": {
+    "scientificName": "Xanthoria elegans",
+    "image": "/images/Xanthoria_elegans.jpg",
+    "attribution": "Jason Hollinger, edited by Papa Lima Whiskey, Wikimedia Commons (CC BY-SA 3.0), resized",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/"
+  },
+  "Stragania apicalis": {
+    "scientificName": "Stragania apicalis",
+    "image": "/images/Stragania_apicalis.jpg",
+    "attribution": "(c) Sascha Nunheim, some rights reserved (CC BY), iNaturalist observation 181035779 (as Penestragania apicalis)",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
   }
 }
