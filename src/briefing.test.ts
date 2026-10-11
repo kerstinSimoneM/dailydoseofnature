@@ -50,11 +50,11 @@ describe('template and local model mission composition', () => {
 
   it('adapts required observation count to the noticing-time budget', () => {
     const short = buildMission({ lat: 52.52, lng: 13.405 }, 5, 'dry_sunny', new Date('2026-06-15T12:00:00+02:00'));
-    const long = buildMission({ lat: 52.52, lng: 13.405 }, 90, 'light_rain', new Date('2026-10-15T12:00:00+02:00'));
+    const long = buildMission({ lat: 52.52, lng: 13.405 }, 240, 'light_rain', new Date('2026-10-15T12:00:00+02:00'));
     expect(requiredObservationCount(short)).toBe(1);
     expect(requiredObservationCount(mission)).toBe(2);
     expect(requiredObservationCount(long)).toBe(3);
-    expect(JSON.parse(llmMissionPayload(long))).toMatchObject({ season: 'autumn', weather: 'light_rain', timeBudgetMinutes: 90 });
+    expect(JSON.parse(llmMissionPayload(long))).toMatchObject({ season: 'autumn', weather: 'light_rain', timeBudgetMinutes: 240 });
   });
 
   it('provides a handcrafted objective-and-observation baseline for comparison', () => {

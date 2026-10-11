@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { latLngToCell } from 'h3-js';
 import { bearingDegrees, buildMission, cardinalDirection, estimateRoundTripWalkMinutes, haversineKm, missionBudget, monthLift, timeOfDay } from './engine';
-import { anchors, species } from './data';
+import { anchors, pickerCells, species } from './data';
 
 describe('mission planning helpers', () => {
   it('clamps outing length and calculates doorstep, destination, and multi-stop tiers', () => {
@@ -116,6 +116,14 @@ describe('mission planning helpers', () => {
     )).toBe(true);
   });
 
+  it('finds a real destination from nearly every preset area at the default outing length', () => {
+    const afternoon = new Date('2026-06-21T12:00:00Z');
+    const withDestination = pickerCells.filter((cell) =>
+      buildMission(cell, 40, 'dry_sunny', afternoon).anchor.id !== 'nearby-start',
+    );
+    expect(withDestination.length).toBeGreaterThanOrEqual(pickerCells.length - 4);
+  });
+
   it('keeps demo destinations within the total-trip budget across area, duration, time, and weather', () => {
     const berlin = { lat: 52.52, lng: 13.405 };
     const afternoon = new Date('2026-06-21T12:00:00Z');
@@ -130,8 +138,10 @@ describe('mission planning helpers', () => {
     expect(shortSunny.targets.map((item) => item.id)).not.toEqual(rainy.targets.map((item) => item.id));
     expect(shortSunny.targets.map((item) => item.id)).not.toEqual(dawn.targets.map((item) => item.id));
     expect(west.anchor.lng).not.toBe(east.anchor.lng);
-    expect(west.distanceKm).toBe(0);
-    expect(east.distanceKm).toBe(0);
+    expect(west.anchor.access).toBe('public');
+    expect(east.anchor.access).toBe('public');
+    expect(west.walkMinutes).toBeLessThanOrEqual(west.timeBudgetMinutes * 0.6);
+    expect(east.walkMinutes).toBeLessThanOrEqual(east.timeBudgetMinutes * 0.6);
     expect(west.targets).toHaveLength(3);
     expect(east.targets).toHaveLength(3);
   });

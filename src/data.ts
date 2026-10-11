@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import osmAnchors from './osmAnchors.json';
 
 export type Language = 'en' | 'de' | 'fr';
 export type Group = 'Bird' | 'Plant' | 'Mammal' | 'Invertebrate' | 'Fungi' | 'Herpetofauna' | 'Other';
@@ -78,7 +79,7 @@ export type Anchor = {
   parent?: string;
 };
 
-export const anchors: Anchor[] = [
+const curatedAnchors: Anchor[] = [
   { id: 'street-trees', name: 'Mitte leafy streets', lat: 52.5228, lng: 13.4092, habitat: 'sheltered street trees & planted courtyards', lit: true, access: 'public' },
   { id: 'tiergarten', name: 'Tiergarten', lat: 52.5145, lng: 13.3501, habitat: 'shaded paths & open lawns', lit: true, access: 'public' },
   { id: 'f-hain', name: 'Volkspark Friedrichshain', lat: 52.5274, lng: 13.4324, habitat: 'old trees & meadow edges', lit: true, access: 'public' },
@@ -87,6 +88,9 @@ export const anchors: Anchor[] = [
   { id: 'tempelhof', name: 'Tempelhofer Feld', lat: 52.4731, lng: 13.4032, habitat: 'wide open grassland', lit: false, access: 'public' },
   { id: 'spree', name: 'Spree riverside path', lat: 52.5203, lng: 13.4062, habitat: 'riverside path & planted edges with water nearby', lit: true, access: 'public' },
 ];
+
+// Named public green and water places from OpenStreetMap (ODbL); see pipeline/build_osm_anchors.py.
+export const anchors: Anchor[] = [...curatedAnchors, ...(osmAnchors as Anchor[])];
 
 const pickerAreaRows = [
   { y: 30, band: 'North', x: [120, 165, 210] },
