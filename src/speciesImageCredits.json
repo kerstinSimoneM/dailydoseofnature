@@ -125,13 +125,6 @@
     "license": "CC BY 4.0",
     "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
   },
-  "Asplenium ruta-muraria": {
-    "scientificName": "Asplenium ruta-muraria",
-    "image": "/images/Asplenium_ruta-muraria.jpg",
-    "attribution": "(c) A. Flinn (and M. Finn), bazı hakları saklıdır (CC BY-NC), yükleyen: A. Flinn (and M. Finn)",
-    "license": "CC BY-NC 4.0",
-    "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/"
-  },
   "Athelia arachnoidea": {
     "scientificName": "Athelia arachnoidea",
     "image": "/images/Athelia_arachnoidea.jpg",
@@ -201,13 +194,6 @@
     "attribution": "(c) Shaun Pogacnik, some rights reserved (CC BY-NC), uploaded by Shaun Pogacnik",
     "license": "CC BY-NC 4.0",
     "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/"
-  },
-  "Capsella bursa-pastoris": {
-    "scientificName": "Capsella bursa-pastoris",
-    "image": "/images/Capsella_bursa-pastoris.jpg",
-    "attribution": "(c) JosÃ© MarÃ­a Escolano, some rights reserved (CC BY-NC-SA)",
-    "license": "CC BY-NC-SA 4.0",
-    "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/"
   },
   "Cardamine hirsuta": {
     "scientificName": "Cardamine hirsuta",
@@ -618,7 +604,7 @@
   "Hordeum murinum": {
     "scientificName": "Hordeum murinum",
     "image": "/images/Hordeum_murinum.jpg",
-    "attribution": "(c) SalomÃ©, some rights reserved (CC BY-NC-SA)",
+    "attribution": "(c) Salomé, some rights reserved (CC BY-NC-SA)",
     "license": "CC BY-NC-SA 4.0",
     "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/"
   },
@@ -1217,13 +1203,6 @@
     "license": "CC BY-NC 4.0",
     "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/"
   },
-  "Xestia c-nigrum": {
-    "scientificName": "Xestia c-nigrum",
-    "image": "/images/Xestia_c-nigrum.jpg",
-    "attribution": "(c) Michał Brzeziński, some rights reserved (CC BY-NC), uploaded by Michał Brzeziński",
-    "license": "CC BY-NC 4.0",
-    "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/"
-  },
   "Zygina flammigera": {
     "scientificName": "Zygina flammigera",
     "image": "/images/Zygina_flammigera.jpg",
@@ -1286,5 +1265,348 @@
     "attribution": "(c) Sascha Nunheim, some rights reserved (CC BY), iNaturalist observation 181035779 (as Penestragania apicalis)",
     "license": "CC BY 4.0",
     "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Urtica dioica": {
+    "scientificName": "Urtica dioica",
+    "image": "/images/Urtica_dioica.jpg",
+    "attribution": "No rights reserved (CC0), iNaturalist observation 27143896",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "Ailanthus altissima": {
+    "scientificName": "Ailanthus altissima",
+    "image": "/images/Ailanthus_altissima.jpg",
+    "attribution": "(c) John Abrams, some rights reserved (CC BY), iNaturalist observation 127112855",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Alliaria petiolata": {
+    "scientificName": "Alliaria petiolata",
+    "image": "/images/Alliaria_petiolata.jpg",
+    "attribution": "(c) Quinten Wiegersma, some rights reserved (CC BY), iNaturalist observation 25589816",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Acer pseudoplatanus": {
+    "scientificName": "Acer pseudoplatanus",
+    "image": "/images/Acer_pseudoplatanus.jpg",
+    "attribution": "(c) Douglas Goldman, some rights reserved (CC BY-SA), iNaturalist observation 108175961",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
+  },
+  "Hebata vitis": {
+    "scientificName": "Hebata vitis",
+    "image": "/images/Hebata_vitis.jpg",
+    "attribution": "(c) Jerry Lanfear, some rights reserved (CC BY), iNaturalist observation 16764544",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Apis mellifera": {
+    "scientificName": "Apis mellifera",
+    "image": "/images/Apis_mellifera.jpg",
+    "attribution": "No rights reserved (CC0), iNaturalist observation 128011193",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "Viridicerus ustulatus": {
+    "scientificName": "Viridicerus ustulatus",
+    "image": "/images/Viridicerus_ustulatus.jpg",
+    "attribution": "(c) Sascha Nunheim, some rights reserved (CC BY), iNaturalist observation 206413658",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Erodium cicutarium": {
+    "scientificName": "Erodium cicutarium",
+    "image": "/images/Erodium_cicutarium.jpg",
+    "attribution": "No rights reserved (CC0), iNaturalist observation 148568184",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "Eupteryx decemnotata": {
+    "scientificName": "Eupteryx decemnotata",
+    "image": "/images/Eupteryx_decemnotata.jpg",
+    "attribution": "(c) Adrienne van den Beemt, some rights reserved (CC BY), iNaturalist observation 324580130",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Pisaura mirabilis": {
+    "scientificName": "Pisaura mirabilis",
+    "image": "/images/Pisaura_mirabilis.jpg",
+    "attribution": "(c) Анатолий Озерной /Anatoly Ozernoy, some rights reserved (CC BY-SA), iNaturalist observation 18552019",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
+  },
+  "Sedum acre": {
+    "scientificName": "Sedum acre",
+    "image": "/images/Sedum_acre.jpg",
+    "attribution": "(c) Dmitriy Bochkov, some rights reserved (CC BY), iNaturalist observation 103945534",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Syntrichia ruralis": {
+    "scientificName": "Syntrichia ruralis",
+    "image": "/images/Syntrichia_ruralis.jpg",
+    "attribution": "(c) Alexis Tinker-Tsavalas, some rights reserved (CC BY), iNaturalist observation 71352844",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Mangora acalypha": {
+    "scientificName": "Mangora acalypha",
+    "image": "/images/Mangora_acalypha.jpg",
+    "attribution": "No rights reserved (CC0), iNaturalist observation 218614822",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "Stellaria media": {
+    "scientificName": "Stellaria media",
+    "image": "/images/Stellaria_media.jpg",
+    "attribution": "(c) zebedeugalinha, some rights reserved (CC BY), iNaturalist observation 372705350",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Lindbergina aurovittata": {
+    "scientificName": "Lindbergina aurovittata",
+    "image": "/images/Lindbergina_aurovittata.jpg",
+    "attribution": "(c) Paul Cook, some rights reserved (CC BY), iNaturalist observation 66427823",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Vulpes vulpes": {
+    "scientificName": "Vulpes vulpes",
+    "image": "/images/Vulpes_vulpes.jpg",
+    "attribution": "(c) David Willingham, some rights reserved (CC BY), iNaturalist observation 166915295",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Sagina procumbens": {
+    "scientificName": "Sagina procumbens",
+    "image": "/images/Sagina_procumbens.jpg",
+    "attribution": "(c) Juan Carlos Caicedo Hernández, some rights reserved (CC BY), iNaturalist observation 134308765",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Fagus sylvatica": {
+    "scientificName": "Fagus sylvatica",
+    "image": "/images/Fagus_sylvatica.jpg",
+    "attribution": "No rights reserved (CC0), iNaturalist observation 230066466",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "Oxycarenus lavaterae": {
+    "scientificName": "Oxycarenus lavaterae",
+    "image": "/images/Oxycarenus_lavaterae.jpg",
+    "attribution": "No rights reserved (CC0), iNaturalist observation 18281074",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "Scilla siberica": {
+    "scientificName": "Scilla siberica",
+    "image": "/images/Scilla_siberica.jpg",
+    "attribution": "(c) Wolfgang Jauch, some rights reserved (CC BY), iNaturalist observation 21563020",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Cichorium intybus": {
+    "scientificName": "Cichorium intybus",
+    "image": "/images/Cichorium_intybus.jpg",
+    "attribution": "(c) aarongunnar, some rights reserved (CC BY), iNaturalist observation 3800153",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Orthotrichum diaphanum": {
+    "scientificName": "Orthotrichum diaphanum",
+    "image": "/images/Orthotrichum_diaphanum.jpg",
+    "attribution": "(c) Paul Cook, some rights reserved (CC BY), iNaturalist observation 68463574",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Aegopodium podagraria": {
+    "scientificName": "Aegopodium podagraria",
+    "image": "/images/Aegopodium_podagraria.jpg",
+    "attribution": "No rights reserved (CC0), iNaturalist observation 235343067",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "Bombus pascuorum": {
+    "scientificName": "Bombus pascuorum",
+    "image": "/images/Bombus_pascuorum.jpg",
+    "attribution": "(c) richyfourtytwo, some rights reserved (CC BY), iNaturalist observation 5949338",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Corydalis solida": {
+    "scientificName": "Corydalis solida",
+    "image": "/images/Corydalis_solida.jpg",
+    "attribution": "(c) Edoardo Nardelli, some rights reserved (CC BY), iNaturalist observation 72032284",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Medicago lupulina": {
+    "scientificName": "Medicago lupulina",
+    "image": "/images/Medicago_lupulina.jpg",
+    "attribution": "(c) zebedeugalinha, some rights reserved (CC BY), iNaturalist observation 358478238",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Carpinus betulus": {
+    "scientificName": "Carpinus betulus",
+    "image": "/images/Carpinus_betulus.jpg",
+    "attribution": "No rights reserved (CC0), iNaturalist observation 245795854",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "Errastunus ocellaris": {
+    "scientificName": "Errastunus ocellaris",
+    "image": "/images/Errastunus_ocellaris.jpg",
+    "attribution": "(c) Sascha Nunheim, some rights reserved (CC BY), iNaturalist observation 241324515",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Dicranoweisia cirrata": {
+    "scientificName": "Dicranoweisia cirrata",
+    "image": "/images/Dicranoweisia_cirrata.jpg",
+    "attribution": "(c) Alexis Tinker-Tsavalas, some rights reserved (CC BY), iNaturalist observation 70995143",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Lolium perenne": {
+    "scientificName": "Lolium perenne",
+    "image": "/images/Lolium_perenne.jpg",
+    "attribution": "(c) Daniel Heras González, some rights reserved (CC BY), iNaturalist observation 79750621",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Tremulicerus fulgidus": {
+    "scientificName": "Tremulicerus fulgidus",
+    "image": "/images/Tremulicerus_fulgidus.jpg",
+    "attribution": "(c) carnifex, some rights reserved (CC BY), iNaturalist observation 108618772",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Erithacus rubecula": {
+    "scientificName": "Erithacus rubecula",
+    "image": "/images/Erithacus_rubecula.jpg",
+    "attribution": "(c) Alexis Tinker-Tsavalas, some rights reserved (CC BY), iNaturalist observation 19776411",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Vespa crabro": {
+    "scientificName": "Vespa crabro",
+    "image": "/images/Vespa_crabro.jpg",
+    "attribution": "(c) katunchik, some rights reserved (CC BY), iNaturalist observation 16484807",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Hypochaeris radicata": {
+    "scientificName": "Hypochaeris radicata",
+    "image": "/images/Hypochaeris_radicata.jpg",
+    "attribution": "(c) Douglas Goldman, some rights reserved (CC BY-SA), iNaturalist observation 153337570",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
+  },
+  "Pilosella officinarum": {
+    "scientificName": "Pilosella officinarum",
+    "image": "/images/Pilosella_officinarum.jpg",
+    "attribution": "(c) Поляков Александр, some rights reserved (CC BY), iNaturalist observation 95941084",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Tautoneura polymitusa": {
+    "scientificName": "Tautoneura polymitusa",
+    "image": "/images/Tautoneura_polymitusa.jpg",
+    "attribution": "(c) Alexis Tinker-Tsavalas, some rights reserved (CC BY), iNaturalist observation 37393658",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Linnavuoriana sexmaculata": {
+    "scientificName": "Linnavuoriana sexmaculata",
+    "image": "/images/Linnavuoriana_sexmaculata.jpg",
+    "attribution": "(c) portioid, some rights reserved (CC BY), iNaturalist observation 6735343",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Calvia quatuordecimguttata": {
+    "scientificName": "Calvia quatuordecimguttata",
+    "image": "/images/Calvia_quatuordecimguttata.jpg",
+    "attribution": "(c) Will Linnard, some rights reserved (CC BY), iNaturalist observation 77489680",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Dolycoris baccarum": {
+    "scientificName": "Dolycoris baccarum",
+    "image": "/images/Dolycoris_baccarum.jpg",
+    "attribution": "(c) 0959kedi, some rights reserved (CC BY), iNaturalist observation 202967076",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Cygnus olor": {
+    "scientificName": "Cygnus olor",
+    "image": "/images/Cygnus_olor.jpg",
+    "attribution": "(c) carnifex, some rights reserved (CC BY), iNaturalist observation 10064753",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Lamium album": {
+    "scientificName": "Lamium album",
+    "image": "/images/Lamium_album.jpg",
+    "attribution": "(c) Christine Rampon, some rights reserved (CC BY), iNaturalist observation 158685092",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Nigma walckenaeri": {
+    "scientificName": "Nigma walckenaeri",
+    "image": "/images/Nigma_walckenaeri.jpg",
+    "attribution": "(c) Alexis Tinker-Tsavalas, some rights reserved (CC BY), iNaturalist observation 100997145",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Populicerus albicans": {
+    "scientificName": "Populicerus albicans",
+    "image": "/images/Populicerus_albicans.jpg",
+    "attribution": "(c) Sascha Nunheim, some rights reserved (CC BY), iNaturalist observation 380044035",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Acericerus ribauti": {
+    "scientificName": "Acericerus ribauti",
+    "image": "/images/Acericerus_ribauti.jpg",
+    "attribution": "No rights reserved (CC0), iNaturalist observation 196927719",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "Melanelixia subaurifera": {
+    "scientificName": "Melanelixia subaurifera",
+    "image": "/images/Melanelixia_subaurifera.jpg",
+    "attribution": "(c) Nova Patch, some rights reserved (CC BY-SA), iNaturalist observation 47368830",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
+  },
+  "Stenocranus major": {
+    "scientificName": "Stenocranus major",
+    "image": "/images/Stenocranus_major.jpg",
+    "attribution": "(c) Sascha Nunheim, some rights reserved (CC BY), iNaturalist observation 317603161",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "Asplenium ruta-muraria": {
+    "scientificName": "Asplenium ruta-muraria",
+    "image": "/images/Asplenium_ruta-muraria.jpg",
+    "attribution": "(c) A. Flinn (and M. Finn), bazı hakları saklıdır (CC BY-NC), yükleyen: A. Flinn (and M. Finn)",
+    "license": "CC BY-NC 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/"
+  },
+  "Capsella bursa-pastoris": {
+    "scientificName": "Capsella bursa-pastoris",
+    "image": "/images/Capsella_bursa-pastoris.jpg",
+    "attribution": "(c) José María Escolano, some rights reserved (CC BY-NC-SA)",
+    "license": "CC BY-NC-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+  },
+  "Xestia c-nigrum": {
+    "scientificName": "Xestia c-nigrum",
+    "image": "/images/Xestia_c-nigrum.jpg",
+    "attribution": "(c) Michał Brzeziński, some rights reserved (CC BY-NC), uploaded by Michał Brzeziński",
+    "license": "CC BY-NC 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/"
   }
 }
