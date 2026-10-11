@@ -66,6 +66,23 @@ export function cardinalDirection(degrees: number, language: Language): string {
   return directions[Math.round(degrees / 45) % 8];
 }
 
+const DARK_AFTER_SUNSET_MIN = 30;
+
+export function isDark(date: Date, location: Coordinates): boolean {
+  const { sunrise, sunset } = SunCalc.getTimes(date, location.lat, location.lng);
+  return date.getTime() > sunset.getTime() + DARK_AFTER_SUNSET_MIN * 60_000 ||
+    date.getTime() < sunrise.getTime() - DARK_AFTER_SUNSET_MIN * 60_000;
+}
+
+export function darkMinutes(start: Date, totalMinutes: number, location: Coordinates): number {
+  const total = Math.max(0, Math.min(360, totalMinutes));
+  let dark = 0;
+  for (let t = 0; t < total; t += 5) {
+    if (isDark(new Date(start.getTime() + (t + Math.min(5, total - t) / 2) * 60_000), location)) dark += Math.min(5, total - t);
+  }
+  return dark;
+}
+
 export function timeOfDay(date: Date, location: Coordinates): 'dawn' | 'late_morning' | 'afternoon' | 'dusk' | 'night' {
   const { sunrise, sunset } = SunCalc.getTimes(date, location.lat, location.lng);
   const minutes = date.getHours() * 60 + date.getMinutes();
@@ -74,7 +91,7 @@ export function timeOfDay(date: Date, location: Coordinates): 'dawn' | 'late_mor
   if (minutes >= sunriseMins - 45 && minutes < sunriseMins + 120) return 'dawn';
   if (minutes >= sunriseMins + 120 && minutes < 13 * 60) return 'late_morning';
   if (minutes >= 13 * 60 && minutes < sunsetMins - 90) return 'afternoon';
-  if (minutes >= sunsetMins - 90 && minutes < sunsetMins + 60) return 'dusk';
+  if (minutes >= sunsetMins - 90 && minutes < sunsetMins + DARK_AFTER_SUNSET_MIN) return 'dusk';
   return 'night';
 }
 
@@ -143,31 +160,26 @@ export function safetyMessage(
     en: {
       storm: 'Thunder is in the forecast: stay indoors until it has passed. Take this short, sheltered street-tree wander only when it is safe.',
       ice: 'Slippery conditions are possible: stick to paved, well-lit paths and take it slow.',
-      night: 'Most of your outing is after dark: choose a familiar, lit path and leave wooded trails for daylight.',
+      night: 'Part of your outing is after dark: choose a familiar, lit path and leave wooded trails for daylight.',
       heat: 'It may be hot: keep to shade, bring water, and take breaks.',
     },
     de: {
       storm: 'Bei Gewitter bleib drinnen, bis es vorbei ist. Geh erst danach und nur wenn es sicher ist auf einen kurzen, geschützten Spaziergang.',
       ice: 'Es kann glatt sein: bleib auf beleuchteten, befestigten Wegen und geh langsam.',
-      night: 'Der größte Teil ist nach Einbruch der Dunkelheit: wähle einen vertrauten, beleuchteten Weg.',
+      night: 'Ein Teil der Zeit liegt nach Einbruch der Dunkelheit: wähle einen vertrauten, beleuchteten Weg.',
       heat: 'Es kann heiß werden: suche Schatten, nimm Wasser mit und mach Pausen.',
     },
     fr: {
       storm: 'En cas d’orage, reste à l’intérieur jusqu’à ce qu’il soit passé. Cette courte balade abritée attendra que ce soit sûr.',
       ice: 'Le sol peut être glissant : reste sur des chemins pavés et éclairés, sans te presser.',
-      night: 'La sortie se fera surtout de nuit : choisis un chemin éclairé et familier.',
+      night: 'Une partie de la sortie se fera de nuit : choisis un chemin éclairé et familier.',
       heat: 'Il peut faire chaud : reste à l’ombre, emporte de l’eau et fais des pauses.',
     },
   }[language];
   if (weather === 'thunderstorm' || hazards.thunderstorm) return labels.storm;
   if (weather === 'snow_frost_ice' || hazards.icy) return labels.ice;
-  let nightMinutes = 0;
-  const totalMs = Math.max(0, Math.min(360, totalMinutes)) * 60_000;
-  for (let elapsed = 0; elapsed < totalMs; elapsed += 60 * 60_000) {
-    const intervalMinutes = Math.min(60, (totalMs - elapsed) / 60_000);
-    if (timeOfDay(new Date(when.getTime() + elapsed), location) === 'night') nightMinutes += intervalMinutes;
-  }
-  if (totalMinutes > 0 && nightMinutes / totalMinutes > 0.5) return labels.night;
+  const nightMinutes = darkMinutes(when, totalMinutes, location);
+  if (nightMinutes >= 10) return labels.night;
   if (hazards.heat) return labels.heat;
   return null;
 }
@@ -194,10 +206,7 @@ export function buildMission(
     distanceKm <= budget.radiusKm &&
     estimateRoundTripWalkMinutes(distanceKm, pace) <= budget.walkMinutes,
   );
-  const nightShare = Array.from({ length: Math.ceil(budget.total / 60) }, (_, hour) => {
-    const part = Math.min(60, budget.total - hour * 60);
-    return timeOfDay(new Date(when.getTime() + hour * 60 * 60_000), location) === 'night' ? part : 0;
-  }).reduce((sum, value) => sum + value, 0) / Math.max(budget.total, 1);
+  const nightShare = darkMinutes(when, budget.total, location) / Math.max(budget.total, 1);
   const safetyEligible = weather === 'thunderstorm' || hazards.thunderstorm
     ? eligible.filter(({ anchor }) => anchor.id === 'street-trees')
     : icy

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { latLngToCell } from 'h3-js';
-import { bearingDegrees, buildMission, cardinalDirection, estimateRoundTripWalkMinutes, haversineKm, missionBudget, monthLift, timeOfDay } from './engine';
+import { bearingDegrees, buildMission, cardinalDirection, estimateRoundTripWalkMinutes, haversineKm, missionBudget, monthLift, safetyMessage, timeOfDay } from './engine';
 import { anchors, pickerCells, species } from './data';
 
 describe('mission planning helpers', () => {
@@ -275,5 +275,15 @@ describe('mission planning helpers', () => {
     const mission = buildMission(location, 60, 'dry_sunny', new Date('2026-06-15T12:00:00+02:00'), 0.6, 75, 'en', {}, 'Pilot', catalog);
     expect(haversineKm(location, poor)).toBeGreaterThan(haversineKm(location, rich));
     expect(mission.anchor.id).toBe('rich');
+  });
+});
+
+describe('after-dark safety', () => {
+  const berlin = { lat: 52.52, lng: 13.405 };
+  it('warns when darkness falls during the outing, 53 min after sunset', () => {
+    expect(safetyMessage('dry_overcast', berlin, new Date('2026-10-11T19:16:00+02:00'), 40, 'en')).toMatch(/after dark/);
+  });
+  it('does not warn in daylight', () => {
+    expect(safetyMessage('dry_overcast', berlin, new Date('2026-10-11T14:00:00+02:00'), 40, 'en')).toBeNull();
   });
 });
