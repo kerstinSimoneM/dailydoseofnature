@@ -2,7 +2,10 @@ import { z } from 'zod';
 import type { AppConfig, InitProgressReport, ModelRecord, MLCEngine } from '@mlc-ai/web-llm';
 import type { Language } from './data';
 import type { Mission } from './engine';
-import { llmMissionPayload, substituteBriefing, validateBriefing } from './briefing';
+import {
+  llmMissionPayload, modelCompositionFallback, parseModelMissionComposition,
+  requiredObservationCount, type ModelMissionComposition,
+} from './briefing';
 
 const manifestSchema = z.object({
   enabled: z.boolean(),
@@ -11,8 +14,7 @@ const manifestSchema = z.object({
   modelUrl: z.string().optional(),
   modelLibUrl: z.string().optional(),
   modelSizeBytes: z.number().positive().optional(),
-  modelSha256: z.string().regex(/^[a-f0-9]{64}$/).optional(),
-  files: z.record(z.object({ sha256: z.string().regex(/^[a-f0-9]{64}$/), sizeBytes: z.number().nonnegative() })).optional(),
+  license: z.literal('Apache-2.0').optional(),
   integrity: z.object({
     config: z.string().startsWith('sha256-'),
     model_lib: z.string().startsWith('sha256-'),
@@ -28,17 +30,14 @@ export type ModelProgress = { text: string; progress: number };
 let engine: MLCEngine | null = null;
 let loadedManifest: LocalModelManifest | null = null;
 
+const MODEL_ID = 'SmolLM2-360M-Instruct-q4f16_1-MLC';
+const MODEL_REVISION = '3a622fd89e0216e8bb10c410c007c786baa8a033';
+const MODEL_URL = `https://huggingface.co/mlc-ai/${MODEL_ID}/resolve/${MODEL_REVISION}/`;
+const MODEL_LIB_URL = 'https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/025bcaf3780fa8254f5e5efd3bfea0a5397248f4/web-llm-models/v0_2_84/base/SmolLM2-360M-Instruct-q4f16_1_cs1k-webgpu.wasm';
+
 export function formatBytes(bytes: number): string {
   if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
   return `${Math.ceil(bytes / 1024 ** 2)} MB`;
-}
-
-function sameOriginPath(path: string): string {
-  const url = new URL(path, window.location.origin);
-  if (url.origin !== window.location.origin || !url.pathname.startsWith('/models/')) {
-    throw new Error('Model artifacts must be hosted on this app’s own origin.');
-  }
-  return url.href;
 }
 
 export async function readLocalModelManifest(): Promise<LocalModelManifest> {
@@ -55,21 +54,22 @@ function checkedRecord(manifest: LocalModelManifest, prebuilt: ModelRecord[]): M
     !manifest.modelUrl ||
     !manifest.modelLibUrl ||
     !manifest.modelSizeBytes ||
+    manifest.license !== 'Apache-2.0' ||
     !manifest.integrity
   ) {
-    throw new Error(manifest.message ?? 'A signed-off, first-party model pack is not available.');
+    throw new Error(manifest.message ?? 'The reviewed local model is not available.');
   }
-  const compatible = prebuilt.find((entry) => entry.model_id === manifest.modelId);
+  if (
+    manifest.modelId !== MODEL_ID ||
+    manifest.revision !== MODEL_REVISION ||
+    manifest.modelUrl !== MODEL_URL ||
+    manifest.modelLibUrl !== MODEL_LIB_URL
+  ) {
+    throw new Error('The model manifest does not match the reviewed, pinned model release.');
+  }
+  const compatible = prebuilt.find((entry) => entry.model_id === MODEL_ID);
   if (!compatible) throw new Error('The packaged model is incompatible with the bundled WebLLM runtime.');
-  const model = sameOriginPath(manifest.modelUrl);
-  const modelLib = sameOriginPath(manifest.modelLibUrl);
-  if (!model.includes(`/resolve/${manifest.revision}/`)) {
-    throw new Error('The model URL does not match its pinned source revision.');
-  }
-  if (!manifest.modelSha256 || !manifest.files || Object.keys(manifest.files).length === 0) {
-    throw new Error('The model pack has no complete SHA-256 file manifest.');
-  }
-  return { ...compatible, model, model_lib: modelLib, integrity: manifest.integrity };
+  return { ...compatible, model: MODEL_URL, model_lib: MODEL_LIB_URL, integrity: manifest.integrity };
 }
 
 export async function modelRequirements(): Promise<{ supported: boolean; reason: string }> {
@@ -81,14 +81,18 @@ export async function modelRequirements(): Promise<{ supported: boolean; reason:
   if (!gpu || !(await gpu.requestAdapter())) {
     return { supported: false, reason: 'WebGPU is not available on this device.' };
   }
-  if (!navigator.storage?.estimate || !navigator.storage?.persist) {
-    return { supported: false, reason: 'Persistent browser storage is not available.' };
+  if (!navigator.storage?.estimate) {
+    return { supported: false, reason: 'Browser storage quota cannot be checked on this device.' };
   }
   const { quota = 0 } = await navigator.storage.estimate();
   if (quota < 2 * 1024 ** 3) {
     return { supported: false, reason: 'This device has less than 2 GB of browser storage quota.' };
   }
   return { supported: true, reason: '' };
+}
+
+export async function requestModelStoragePersistence(): Promise<boolean> {
+  return navigator.storage?.persist ? navigator.storage.persist() : false;
 }
 
 export async function loadLocalModel(
@@ -99,8 +103,13 @@ export async function loadLocalModel(
   const manifest = await readLocalModelManifest();
   const { CreateMLCEngine, prebuiltAppConfig } = await import('@mlc-ai/web-llm');
   const record = checkedRecord(manifest, prebuiltAppConfig.model_list);
-  const persistent = await navigator.storage.persist();
-  if (!persistent) throw new Error('The browser did not grant persistent storage for the optional model.');
+  const persistent = await requestModelStoragePersistence();
+  if (!persistent) {
+    onProgress({
+      text: 'Persistent storage was not granted; the browser may clear the downloaded model cache.',
+      progress: 0,
+    });
+  }
   const modelAppConfig: AppConfig = { model_list: [record], cacheBackend: 'cache' };
   engine = await CreateMLCEngine(manifest.modelId!, {
     appConfig: modelAppConfig,
@@ -113,43 +122,71 @@ export async function loadLocalModel(
   return manifest;
 }
 
-export async function rewriteMissionBriefing(
+export async function composeLocalMission(
   mission: Mission,
-  distance: string,
-  direction: string,
   language: Language,
   onProgress: (progress: ModelProgress) => void,
-): Promise<{ text: string; manifest: LocalModelManifest }> {
-  if (language !== 'en') throw new Error('Local story rewrites are currently English-only; the translated template remains available.');
+): Promise<{ composition: ModelMissionComposition; manifest: LocalModelManifest }> {
+  if (language !== 'en') throw new Error('Local mission composition is currently English-only; the translated template remains available.');
+  if (mission.safety) throw new Error('The app is applying the mission safety guidance. Keep using the template note.');
+  const candidates = [...mission.targets, ...mission.gems];
+  if (candidates.length <= requiredObservationCount(mission)) {
+    throw new Error('There are not enough supported observations for a primary mission and an alternative. Keep using the template note.');
+  }
   const manifest = loadedManifest ?? await loadLocalModel(onProgress);
   if (!engine) throw new Error('The local model did not finish loading.');
-  const safeMission = llmMissionPayload(mission);
-  const systemPrompt = [
-    'Rewrite the supplied mission plan as a warm, factual nature invitation in English.',
-    'Return 120 words or fewer. Use placeholders exactly as supplied; never write species names or numbers.',
-    'Include {{species:ID}} for an available target, plus {{dist}}, {{walk_min}}, and {{dir}}.',
-    'Include the exact sentence: "Put your phone away and notice the world around you."',
-    'Do not invent facts, encourage leaving paths, or add safety claims.',
-    'Return only the briefing text.',
-  ].join(' ');
-  const generate = async (temperature: number) => {
+  const context = llmMissionPayload(mission);
+  const candidateIds = candidates.map(({ id }) => id);
+  const stepCount = requiredObservationCount(mission);
+  const responseSchema = {
+    type: 'object',
+    properties: {
+      objective: { type: 'string' },
+      stepIds: {
+        type: 'array',
+        items: { type: 'string', enum: candidateIds },
+        minItems: stepCount,
+        maxItems: stepCount,
+        uniqueItems: true,
+      },
+    },
+    required: ['objective', 'stepIds'],
+    additionalProperties: false,
+  };
+  const generate = async (correction: string) => {
     const result = await engine!.chat.completions.create({
       messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: safeMission },
+        {
+          role: 'system',
+          content: `Compose a curious outdoor mission, not a generic description. Return exactly one JSON object with objective and stepIds. objective must be an imperative phrase of 4 to 16 words starting with Notice, Observe, Compare, Explore, Discover, Look, Listen, Trace, or Watch. The current season is ${mission.season}; never name a different season. Connect season or weather to details explicitly supported by the habitat or observation clues. Do not name species, invent habitats or animal behaviour, or use the phrases "nature mission", "presence of a specific species", or "record". stepIds contains the requested number of distinct IDs from the supplied candidates only. The app chooses a fallback observation. Example grounded objective for this outing: {"objective":"Notice small details around you in ${mission.season}","stepIds":["candidate-a"]}. Do not add text outside the JSON object.`,
+        },
+        {
+          role: 'user',
+          content: `${correction}Mission context:\n${context}\nReturn exactly ${stepCount} distinct step IDs.`,
+        },
       ],
-      temperature,
-      max_tokens: 180,
+      response_format: { type: 'json_object', schema: JSON.stringify(responseSchema) },
+      temperature: 0.3,
+      max_tokens: 256,
     });
-    return result.choices[0]?.message.content?.trim() ?? '';
+    const choice = result.choices[0];
+    if (choice?.finish_reason === 'length') {
+      throw new Error('The local model output was truncated. Keep using the template note.');
+    }
+    return choice?.message.content ?? '';
   };
-  let draft = await generate(0.5);
-  if (!validateBriefing(draft, mission)) draft = await generate(0.15);
-  if (!validateBriefing(draft, mission)) {
-    throw new Error('The local model could not produce a valid short briefing. Keep using the template note.');
+  let parsed = parseModelMissionComposition(await generate(''), mission);
+  let issue = parsed.issue;
+  if (issue) {
+    parsed = parseModelMissionComposition(
+      await generate(`The previous response was rejected: ${issue}. Return only the required valid JSON object.`),
+      mission,
+    );
+    issue = parsed.issue;
   }
+  if (issue || !parsed.composition) throw new Error(modelCompositionFallback(`${issue ?? 'did not produce a valid mission'} twice`));
   return {
-    text: substituteBriefing(draft, mission, distance, direction),
+    composition: parsed.composition,
     manifest,
   };
 }

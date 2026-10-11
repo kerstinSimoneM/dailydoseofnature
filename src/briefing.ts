@@ -1,4 +1,5 @@
-import { speciesDisplayName, type Language } from './data';
+import { z } from 'zod';
+import { speciesDisplayName, type Language, type Species } from './data';
 import type { Mission } from './engine';
 
 const CONDUCT = {
@@ -16,8 +17,6 @@ const TEMPLATE = {
     `Prends le chemin tranquille vers ${names.join(' et ')}. C’est à ${distance} ${direction} à vol d’oiseau dans un sens ; prévois environ ${walk} minutes pour l’aller-retour estimé. Laisse les petits détails venir à toi. ${CONDUCT.fr}`,
 };
 
-const ALLOWED_PLACEHOLDERS = new Set<string>(['dist', 'walk_min', 'dir']);
-
 export function templateBriefing(
   mission: Mission,
   language: Language,
@@ -26,9 +25,9 @@ export function templateBriefing(
 ): string {
   if (mission.distanceKm === 0) {
     return {
-      en: `No destination fits this short outing, so stay at your starting area and use all ${mission.observeMinutes} minutes to notice nature nearby. These are prompts, not guaranteed sightings. ${CONDUCT.en}`,
-      de: `Für diesen kurzen Ausflug passt kein Ziel. Bleib im Startgebiet und nutze die ${mission.observeMinutes} Minuten, um die Natur in deiner Nähe zu entdecken. Die Arten sind Ideen, keine garantierten Funde. ${CONDUCT.de}`,
-      fr: `Aucune destination ne convient à cette courte sortie : reste dans ta zone de départ et profite des ${mission.observeMinutes} minutes pour observer la nature autour de toi. Ce sont des pistes, pas des observations garanties. ${CONDUCT.fr}`,
+      en: `No destination fits this outing, so stay at your starting area and use all ${mission.observeMinutes} minutes to notice nature nearby. These are prompts, not guaranteed sightings. ${CONDUCT.en}`,
+      de: `Für diesen Ausflug passt kein Ziel. Bleib im Startgebiet und nutze die ${mission.observeMinutes} Minuten, um die Natur in deiner Nähe zu entdecken. Die Arten sind Ideen, keine garantierten Funde. ${CONDUCT.de}`,
+      fr: `Aucune destination ne convient pour cette sortie : reste dans ta zone de départ et profite des ${mission.observeMinutes} minutes pour observer la nature autour de toi. Ce sont des pistes, pas des observations garanties. ${CONDUCT.fr}`,
     }[language];
   }
   const names: string[] = mission.targets.slice(0, 2).map((entry) => speciesDisplayName(entry, language).name);
@@ -36,65 +35,137 @@ export function templateBriefing(
 }
 
 export function llmMissionPayload(mission: Mission): string {
+  const candidates = [...mission.targets, ...mission.gems];
   return JSON.stringify({
-    distance: '{{dist}}',
-    direction: '{{dir}}',
-    walkMinutes: '{{walk_min}}',
-    habitat: mission.anchor.habitat,
+    season: mission.season,
     weather: mission.context,
-    targets: mission.targets.map((item) => ({ placeholder: `{{species:${item.id}}}` })),
-    gems: mission.gems.map((item) => ({ placeholder: `{{species:${item.id}}}` })),
-    fieldcraft: mission.targets.map((item) => item.fieldcraft.en),
+    timeBudgetMinutes: mission.timeBudgetMinutes,
+    noticingBudgetMinutes: mission.observeMinutes,
+    habitat: mission.anchor.habitat,
+    observations: candidates.map((item) => ({
+      id: item.id,
+      group: item.group,
+      clue: item.fieldcraft.en,
+    })),
   });
 }
 
-export function validateBriefing(text: string, mission: Mission): boolean {
-  if (text.trim().split(/\s+/).filter(Boolean).length > 120) return false;
-  if (!/put your phone away/i.test(text)) return false;
-  const withoutTokens = text.replace(/\{\{[^{}]+\}\}/g, '');
-  if (/\d/.test(withoutTokens)) return false;
-  if (/\{\{[^{}]*\}\}/.test(withoutTokens)) return false;
-  const placeholders = text.match(/\{\{[^{}]+\}\}/g) ?? [];
-  if (!placeholders.length) return false;
-  for (const required of ['{{dist}}', '{{walk_min}}', '{{dir}}']) {
-    if (!text.includes(required)) return false;
+const compositionSchema = z.object({
+  objective: z.string(),
+  stepIds: z.array(z.string()),
+});
+
+export type ModelMissionComposition = {
+  objective: string;
+  steps: Species[];
+  alternative: Species;
+};
+
+export function requiredObservationCount(mission: Mission): number {
+  if (mission.observeMinutes <= 15) return 1;
+  if (mission.observeMinutes <= 45) return 2;
+  return 3;
+}
+
+export function templateMissionComposition(mission: Mission): ModelMissionComposition | null {
+  if (mission.safety) return null;
+  const candidates = [...mission.targets, ...mission.gems];
+  if (candidates.length < 2) return null;
+
+  const objective = mission.context === 'light_rain' || mission.context === 'heavy_rain'
+    ? 'Notice how rain changes sounds and surfaces around you'
+    : mission.context === 'dry_overcast'
+      ? 'Look closely for quiet colours and shapes in this habitat'
+      : mission.observeMinutes <= 15
+        ? `Notice one small sign of ${mission.season} in this habitat`
+        : mission.observeMinutes <= 45
+          ? `Notice how ${mission.season} shapes this patch of nature`
+          : `Compare several signs of ${mission.season} across this habitat`;
+  const count = requiredObservationCount(mission);
+  if (candidates.length <= count) return null;
+  return {
+    objective,
+    steps: candidates.slice(0, count),
+    alternative: candidates[count],
+  };
+}
+
+export function validateModelObjective(objective: string, mission: Mission): boolean {
+  const trimmed = objective.trim();
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  if (words.length < 4 || words.length > 16) return false;
+  if (!/^(?:notice|observe|compare|explore|discover|look|listen|find|trace|watch|follow|seek)\b/i.test(trimmed)) return false;
+  if (/[0-9{}]|\n|[.!?].*[.!?]/.test(trimmed)) return false;
+  if (/\b(?:touch|pick|collect|feed|chase|eat|climb|enter|guaranteed|must find)\b/i.test(trimmed)) return false;
+  const lowerText = trimmed.toLocaleLowerCase('en');
+  const candidates = [...mission.targets, ...mission.gems];
+  if (candidates.some((item) =>
+    [
+      ...Object.values(item.names),
+      ...Object.values(item.common_names ?? {}),
+      item.scientific_name ?? '',
+    ].some((name) => name && lowerText.includes(name.toLocaleLowerCase('en'))),
+  )) return false;
+
+  const seasonWords: SeasonWord[] = ['spring', 'summer', 'autumn', 'winter'];
+  if (seasonWords.some((season) => lowerText.includes(season) && season !== mission.season)) return false;
+
+  const habitatText = mission.anchor.habitat.toLocaleLowerCase('en');
+  const locationClaims = ['forest', 'woodland', 'river', 'lake', 'pond', 'meadow', 'field', 'beach', 'ocean', 'mountain', 'garden', 'courtyard'];
+  if (locationClaims.some((claim) => new RegExp(`\\b${claim}\\b`, 'i').test(lowerText) && !habitatText.includes(claim))) {
+    return false;
   }
-  const knownSpecies = new Set<string>([...mission.targets, ...mission.gems].map((item) => item.id));
-  for (const token of placeholders) {
-    const speciesPlaceholder = /^\{\{species:([a-z0-9-]+)\}\}$/.exec(token);
-    if (speciesPlaceholder) {
-      if (!speciesPlaceholder[1] || !knownSpecies.has(speciesPlaceholder[1])) return false;
-      continue;
-    }
-    const simplePlaceholder = /^\{\{([a-z_]+)\}\}$/.exec(token);
-    if (!simplePlaceholder?.[1] || !ALLOWED_PLACEHOLDERS.has(simplePlaceholder[1])) return false;
-  }
-  if (!placeholders.some((token) => token.startsWith('{{species:'))) return false;
-  const lowerText = text.toLocaleLowerCase();
-  const namedSpecies = [...mission.targets, ...mission.gems].some((item) =>
-    Object.values(item.names).some((name) => lowerText.includes(name.toLocaleLowerCase())),
+
+  type SeasonWord = Mission['season'];
+  const clueText = candidates.map((item) => item.fieldcraft.en).join(' ').toLocaleLowerCase('en');
+  const behaviorClaims = ['sound', 'hear', 'song', 'sing', 'chirp', 'nest', 'fruit', 'pollinat', 'flower', 'bloom', 'migrat', 'hibernat'];
+  return !behaviorClaims.some((claim) =>
+    new RegExp(`\\b${claim}\\w*\\b`, 'i').test(lowerText) &&
+    !new RegExp(`\\b${claim}\\w*\\b`, 'i').test(clueText),
   );
-  return !namedSpecies;
 }
 
-export function substituteBriefing(
-  text: string,
+export function parseModelMissionComposition(
+  response: string,
   mission: Mission,
-  distance: string,
-  direction: string,
-): string {
-  const speciesNames = new Map([...mission.targets, ...mission.gems].map((item) => [item.id, speciesDisplayName(item, 'en').name]));
-  return text
-    .replace(/\{\{species:([a-z0-9-]+)\}\}/g, (token, id: string) => speciesNames.get(id) ?? token)
-    .replaceAll('{{dist}}', distance)
-    .replaceAll('{{walk_min}}', String(mission.walkMinutes))
-    .replaceAll('{{dir}}', direction);
+): { composition: ModelMissionComposition | null; issue: string | null } {
+  const json = response.trim().replace(/^```(?:json)?\s*|\s*```$/gi, '');
+  let decoded: unknown;
+  try {
+    decoded = JSON.parse(json);
+  } catch {
+    return { composition: null, issue: 'the response was not valid JSON' };
+  }
+  const parsed = compositionSchema.safeParse(decoded);
+  if (!parsed.success) {
+    const fields = typeof decoded === 'object' && decoded !== null && !Array.isArray(decoded)
+      ? Object.keys(decoded).slice(0, 8).join(', ')
+      : Array.isArray(decoded) ? 'a JSON array' : typeof decoded;
+    return { composition: null, issue: `the response did not match the mission structure (received ${fields || 'no fields'})` };
+  }
+
+  const candidates = new Map([...mission.targets, ...mission.gems].map((item) => [item.id, item]));
+  const { objective, stepIds } = parsed.data;
+  if (!validateModelObjective(objective, mission)) {
+    return { composition: null, issue: 'the objective was too long or included unsupported content' };
+  }
+  if (stepIds.length !== requiredObservationCount(mission) || new Set(stepIds).size !== stepIds.length) {
+    return { composition: null, issue: 'the observation steps did not fit the time budget' };
+  }
+  if (stepIds.some((id) => !candidates.has(id))) {
+    return { composition: null, issue: 'the response referenced an observation outside the supplied candidates' };
+  }
+  const steps: Species[] = [];
+  for (const id of stepIds) {
+    const step = candidates.get(id);
+    if (!step) return { composition: null, issue: 'the response referenced an observation outside the supplied candidates' };
+    steps.push(step);
+  }
+  const alternative = [...candidates.values()].find((candidate) => !stepIds.includes(candidate.id));
+  if (!alternative) return { composition: null, issue: 'the alternative was not a supplied candidate' };
+  return { composition: { objective: objective.trim(), steps, alternative }, issue: null };
 }
 
-export function conductLine(language: Language): string {
-  return CONDUCT[language];
-}
-
-export function missionSpeciesIds(mission: Mission): string[] {
-  return [...mission.targets, ...mission.gems].map((item) => item.id);
+export function modelCompositionFallback(reason: string): string {
+  return `The local model ${reason}. Keep using the template note.`;
 }

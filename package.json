@@ -4,12 +4,17 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "pipeline": "python3 -m pipeline.build_pack",
-    "pilot-pack": "python3 -m pipeline.build_observational_pilot"
+    "check:node": "node -e \"const [major, minor] = process.versions.node.split('.').map(Number); const supported = (major === 20 && minor >= 19) || (major === 22 && minor >= 12) || major > 22; if (!supported) { console.error('This project requires Node.js 20.19+ or 22.12+ (Vite 7 requirement).'); process.exit(1); }\"",
+    "dev": "npm run check:node && vite --host",
+    "build": "npm run check:node && tsc -b && vite build",
+    "preview": "npm run check:node && vite preview",
+    "test": "npm run check:node && vitest run",
+    "test:e2e": "npm run check:node && playwright test",
+    "pipeline": "npm run check:node && python3 -m pipeline.build_pack",
+    "pilot-pack": "npm run check:node && python3 -m pipeline.build_observational_pilot"
+  },
+  "engines": {
+    "node": ">=20.19.0 <21.0.0 || >=22.12.0"
   },
   "dependencies": {
     "@mlc-ai/web-llm": "^0.2.85",
@@ -21,6 +26,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@types/suncalc": "^1.9.2",

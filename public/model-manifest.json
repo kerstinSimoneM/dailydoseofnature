@@ -1,4 +1,20 @@
 {
-  "enabled": false,
-  "message": "A project-hosted, checksum-pinned WebLLM model has not been packaged for this deployment."
+  "enabled": true,
+  "modelId": "SmolLM2-360M-Instruct-q4f16_1-MLC",
+  "revision": "3a622fd89e0216e8bb10c410c007c786baa8a033",
+  "modelUrl": "https://huggingface.co/mlc-ai/SmolLM2-360M-Instruct-q4f16_1-MLC/resolve/3a622fd89e0216e8bb10c410c007c786baa8a033/",
+  "modelLibUrl": "https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/025bcaf3780fa8254f5e5efd3bfea0a5397248f4/web-llm-models/v0_2_84/base/SmolLM2-360M-Instruct-q4f16_1_cs1k-webgpu.wasm",
+  "modelSizeBytes": 209322642,
+  "license": "Apache-2.0",
+  "integrity": {
+    "config": "sha256-tzKWmdb9v1pPaKDEKxQlD0vqssq7+hIPrmySTn3Njyw=",
+    "model_lib": "sha256-XCAJhgV4BVDEDpxk0ojdbjaXB6CNQTMDcVYBmwZK1Bs=",
+    "tokenizer": {
+      "tokenizer.json": "sha256-nKms3bZSWhlOyKx6h/JPu6cjKpoV/6GvDBIk/NiI5Hw=",
+      "vocab.json": "sha256-grhAEuOt1NAdEroURCAm5JuMu66tH3ns89kZeE+C3Hk=",
+      "merges.txt": "sha256-C1Toqk5T1Tg+LkvGNaVrQ/lkf3sTgy1dns2PgtrE9RA=",
+      "tokenizer_config.json": "sha256-XCAJhgV4BVDEDpxk0ojdbjaXB6CNQTMDcVYBmwZK1Bs="
+    },
+    "onFailure": "error"
+  }
 }

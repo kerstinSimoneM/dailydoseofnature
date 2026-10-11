@@ -3,6 +3,7 @@ import { cellToParent, getResolution, latLngToCell } from 'h3-js';
 import { anchors, species, type Anchor, type Language, type Species, type Weather } from './data';
 
 export type Coordinates = { lat: number; lng: number };
+export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
 export type SafetyHazards = { thunderstorm?: boolean; icy?: boolean; heat?: boolean };
 export type MissionCatalog = {
   anchors: Anchor[];
@@ -25,6 +26,8 @@ export type Mission = {
   nearbyEvidenceCell: string | null;
   freshness: string;
   dataBuiltAt: string | null;
+  season: Season;
+  timeBudgetMinutes: number;
 };
 
 export function haversineKm(from: Coordinates, to: Coordinates): number {
@@ -212,6 +215,13 @@ export function buildMission(
   const walkMinutes = estimateRoundTripWalkMinutes(distanceKm, pace);
   const spatialPoint = catalog.speciesLocation === 'destination' ? anchor : location;
   const month = when.getMonth() + 1;
+  const season = month >= 3 && month <= 5
+    ? 'spring'
+    : month >= 6 && month <= 8
+      ? 'summer'
+      : month >= 9 && month <= 11
+        ? 'autumn'
+        : 'winter';
 
   const spatialRate = (entry: Species, point: Coordinates): number => {
     const exactRate = [8, 7, 6, 5].map((resolution) =>
@@ -278,6 +288,8 @@ export function buildMission(
     nearbyEvidenceCell,
     freshness,
     dataBuiltAt: catalog.builtAt ?? null,
+    season,
+    timeBudgetMinutes: budget.total,
   };
 }
 

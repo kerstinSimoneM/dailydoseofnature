@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowDownRight, ArrowLeft, ArrowRight, ArrowUpRight,
   BookOpen, Check, ChevronDown, CircleHelp, Compass, Flower2, Leaf, MapPin,
@@ -11,10 +11,12 @@ import { loadNaturePack, type NaturePack } from './dataPack';
 import { LocationRequestError, requestDeviceLocation } from './geolocation';
 import { currentForecastHour, currentForecastWeather, forecastAgeLabel, getBerlinForecast, outingWeather, type ForecastResult } from './weather';
 import {
-  deleteLocalModel, formatBytes, loadLocalModel, readLocalModelManifest, rewriteMissionBriefing,
+  composeLocalMission, deleteLocalModel, formatBytes, loadLocalModel, readLocalModelManifest,
   type LocalModelManifest, type ModelProgress,
 } from './localModel';
-import { templateBriefing } from './briefing';
+import {
+  templateBriefing, templateMissionComposition, type ModelMissionComposition,
+} from './briefing';
 
 type Page = 'plan' | 'mission' | 'checklist' | 'about' | 'settings';
 type CheckIn = { speciesId: string; date: string };
@@ -41,8 +43,8 @@ const copy = {
     known: 'Known limitations', limitationText: 'Observer bias shapes sightings; rankings summarize reports and are not calibrated probabilities or live sightings. Weather and time-of-day do not alter species ranks because this pilot has no reliable linked weather/effort data. Destinations are hand-curated, not live-verified OSM routes.',
     demoLimitationText: 'Without the GBIF pilot pack, the starter guide is illustrative and its season, time, habitat, and weather hints are heuristics—not sightings. Destinations are hand-curated, not live-verified routes.',
     outside: 'I took it outside', outsideText: 'Date: ____   Area (not exact coordinates): ____   One thing I noticed: ____   What surprised me: ____',
-    language: 'Language', pace: 'Walking pace', fraction: 'Time spent walking', model: 'On-device story helper',
-    modelText: 'A compatible project-hosted WebGPU model can rewrite the note on this device. The template works without it.',
+    language: 'Language', pace: 'Walking pace', fraction: 'Time spent walking',     model: 'Optional on-device AI experiment',
+    modelText: 'Try an experimental English mission composition with SmolLM2 on this device. It is never needed: deterministic missions and translated briefings work without the model.',
     dataBacked: 'GBIF-backed ranking evidence—not calibrated presence probabilities.',
     dataLoading: 'Loading the Berlin observation pack…',
     dataError: 'The local data pack could not be validated. Showing the clearly labelled starter guide instead.',
@@ -79,12 +81,20 @@ const copy = {
     weatherUnavailable: 'No forecast available. Choose current conditions.',
     weatherFreshness: 'Updated',
     briefing: 'A little pocket-sized briefing',
-    template: 'Ready now · no model needed',
-    rewrite: 'Try a local rewrite',
+    objective: 'Your mission objective',
+    observations: 'Notice along the way',
+    alternative: 'If you do not find it',
+    putAway: 'Put your phone away between steps; no sighting is guaranteed.',
+    template: 'Handcrafted mission · AI not used',
+    modelWorking: 'Generating with on-device AI…',
+    modelUsed: 'Generated with on-device AI',
+    modelFallback: 'Handcrafted mission remains · AI experiment unavailable',
+    tryModel: 'Try optional AI mission (about 200 MB on first use)',
+    retryModel: 'Try another AI composition',
     prepareModel: 'Download model on this device',
     deleteModel: 'Delete downloaded model',
-    modelAdvice: 'Optional model, downloaded only when you start it. Large download: Wi-Fi recommended.',
-    modelUnavailable: 'No project-hosted model pack is ready for this deployment. The template always works.',
+    modelAdvice: 'The optional model downloads about 200 MB only when you choose to try an AI mission. It then runs locally on a compatible device. Your browser may clear the cached model. Wi-Fi recommended.',
+    modelUnavailable: 'SmolLM2-360M-Instruct · Apache-2.0',
     modelLoaded: 'Model ready on this device',
     conditions: { dry_sunny: 'Sunny', dry_overcast: 'Overcast', light_rain: 'Drizzle', heavy_rain: 'Heavy rain', snow_frost_ice: 'Frost / ice', thunderstorm: 'Thunderstorm' },
     groups: { Bird: 'Bird', Plant: 'Plant', Mammal: 'Mammal', Invertebrate: 'Invertebrate', Fungi: 'Fungi', Herpetofauna: 'Reptile / amphibian', Other: 'Other wildlife' },
@@ -112,8 +122,8 @@ const copy = {
     known: 'Bekannte Einschränkungen', limitationText: 'Beobachtungs-Bias prägt Funddaten; die Rangfolge fasst Meldungen zusammen und ist weder kalibrierte Wahrscheinlichkeit noch aktueller Nachweis. Wetter und Tageszeit verändern die Rangfolge nicht, da verknüpfte Wetter- und Beobachtungsaufwandsdaten fehlen. Ziele sind handgepflegt, keine live geprüften OSM-Routen.',
     demoLimitationText: 'Ohne GBIF-Pilotpaket ist der Startguide beispielhaft; Saison-, Tageszeit-, Habitat- und Wetterhinweise sind Heuristiken, keine Funde. Ziele sind handgepflegt und nicht live als Routen geprüft.',
     outside: 'Ich war draußen', outsideText: 'Datum: ____   Gebiet (keine genauen Koordinaten): ____   Eine Entdeckung: ____   Das hat mich überrascht: ____',
-    language: 'Sprache', pace: 'Gehgeschwindigkeit', fraction: 'Zeit zu Fuß', model: 'Lokaler Geschichtenhelfer',
-    modelText: 'Ein kompatibles, projektgehostetes WebGPU-Modell kann die Notiz auf diesem Gerät umformulieren. Die Vorlage funktioniert ohne Modell.',
+    language: 'Sprache', pace: 'Gehgeschwindigkeit', fraction: 'Zeit zu Fuß',     model: 'Optionales lokales KI-Experiment',
+    modelText: 'Teste eine experimentelle englische Missionskomposition mit SmolLM2 auf diesem Gerät. Sie ist nicht erforderlich: Deterministische Missionen und übersetzte Notizen funktionieren ohne Modell.',
     dataBacked: 'GBIF-gestützte Rangfolge – keine kalibrierten Präsenzwahrscheinlichkeiten.',
     dataLoading: 'Berlin-Beobachtungspaket wird geladen…',
     dataError: 'Das lokale Datenpaket konnte nicht geprüft werden. Stattdessen wird der klar gekennzeichnete Startguide angezeigt.',
@@ -150,12 +160,20 @@ const copy = {
     weatherUnavailable: 'Keine Vorhersage verfügbar. Wähle die aktuellen Bedingungen.',
     weatherFreshness: 'Aktualisiert',
     briefing: 'Eine kleine Notiz für unterwegs',
-    template: 'Sofort bereit · kein Modell nötig',
-    rewrite: 'Mit lokalem Modell neu formulieren',
+    objective: 'Dein Beobachtungsziel',
+    observations: 'Entdecke unterwegs',
+    alternative: 'Falls du es nicht entdeckst',
+    putAway: 'Steck dein Handy zwischen den Schritten weg; Sichtungen sind nicht garantiert.',
+    template: 'Handgeplante Mission · keine KI verwendet',
+    modelWorking: 'Generierung mit lokaler KI…',
+    modelUsed: 'Mit lokaler KI generiert',
+    modelFallback: 'Handgeplante Mission bleibt · KI-Experiment nicht verfügbar',
+    tryModel: 'Optionales KI-Experiment testen (erstmals ca. 200 MB)',
+    retryModel: 'Andere KI-Komposition testen',
     prepareModel: 'Modell auf dieses Gerät laden',
     deleteModel: 'Geladenes Modell löschen',
-    modelAdvice: 'Optionales Modell, wird erst beim Start geladen. Großer Download: WLAN empfohlen.',
-    modelUnavailable: 'Für diese Bereitstellung ist kein projektgehostetes Modell bereit. Die Vorlage funktioniert immer.',
+    modelAdvice: 'Das optionale Modell lädt etwa 200 MB nur, wenn du eine KI-Mission ausprobieren möchtest. Danach läuft es auf einem kompatiblen Gerät lokal. Der Browser kann den Modell-Cache löschen. WLAN empfohlen.',
+    modelUnavailable: 'SmolLM2-360M-Instruct · Apache-2.0',
     modelLoaded: 'Modell auf diesem Gerät bereit',
     conditions: { dry_sunny: 'Sonnig', dry_overcast: 'Bewölkt', light_rain: 'Nieselregen', heavy_rain: 'Starker Regen', snow_frost_ice: 'Frost / Eis', thunderstorm: 'Gewitter' },
     groups: { Bird: 'Vogel', Plant: 'Pflanze', Mammal: 'Säugetier', Invertebrate: 'Wirbellose', Fungi: 'Pilz', Herpetofauna: 'Reptil / Amphibium', Other: 'Sonstige Tierwelt' },
@@ -183,8 +201,8 @@ const copy = {
     known: 'Limites connues', limitationText: 'Les biais influencent les observations ; le classement résume des signalements, pas des probabilités calibrées ni des présences actuelles. La météo et l’heure ne modifient pas le classement, faute de données fiables liées à l’effort et à la météo. Les destinations sont définies à la main, pas vérifiées comme itinéraires OSM.',
     demoLimitationText: 'Sans le pack pilote GBIF, le guide est illustratif : saison, heure, habitat et météo sont des heuristiques, pas des observations. Les destinations sont définies à la main et non vérifiées comme itinéraires.',
     outside: 'Je l’ai emmenée dehors', outsideText: 'Date : ____   Quartier (pas de coordonnées précises) : ____   Une chose remarquée : ____   Ce qui m’a surpris : ____',
-    language: 'Langue', pace: 'Allure de marche', fraction: 'Temps de marche', model: 'Assistant local',
-    modelText: 'Un modèle WebGPU compatible hébergé par le projet peut réécrire la note sur cet appareil. Le modèle de base fonctionne sans lui.',
+    language: 'Langue', pace: 'Allure de marche', fraction: 'Temps de marche',     model: 'Expérience IA locale facultative',
+    modelText: 'Teste une composition expérimentale de mission en anglais avec SmolLM2 sur cet appareil. Elle n’est pas nécessaire : les missions déterministes et les notes traduites fonctionnent sans modèle.',
     dataBacked: 'Classement fondé sur GBIF — pas des probabilités de présence calibrées.',
     dataLoading: 'Chargement du pack d’observations de Berlin…',
     dataError: 'Le pack local n’a pas pu être validé. Le guide de départ clairement signalé est affiché à la place.',
@@ -221,12 +239,20 @@ const copy = {
     weatherUnavailable: 'Aucune prévision disponible. Choisis les conditions actuelles.',
     weatherFreshness: 'Mise à jour',
     briefing: 'Une petite note à emporter',
-    template: 'Prête tout de suite · sans modèle',
-    rewrite: 'Essayer une réécriture locale',
+    objective: 'Ton objectif',
+    observations: 'À observer en chemin',
+    alternative: 'Si tu ne le trouves pas',
+    putAway: 'Range ton téléphone entre les étapes ; aucune observation n’est garantie.',
+    template: 'Mission préparée à la main · aucune IA utilisée',
+    modelWorking: 'Génération avec l’IA sur l’appareil…',
+    modelUsed: 'Généré avec l’IA sur l’appareil',
+    modelFallback: 'La mission artisanale reste affichée · expérience IA indisponible',
+    tryModel: 'Tester l’IA facultative (environ 200 Mo la première fois)',
+    retryModel: 'Tester une autre composition IA',
     prepareModel: 'Télécharger le modèle sur cet appareil',
     deleteModel: 'Supprimer le modèle téléchargé',
-    modelAdvice: 'Modèle facultatif, téléchargé uniquement au démarrage. Gros téléchargement : Wi-Fi conseillé.',
-    modelUnavailable: 'Aucun modèle hébergé par le projet n’est prêt pour ce déploiement. Le modèle de base fonctionne toujours.',
+    modelAdvice: 'Le modèle facultatif télécharge environ 200 Mo uniquement si tu choisis de tester une mission IA. Il fonctionne ensuite localement sur un appareil compatible. Le navigateur peut effacer son cache. Wi-Fi conseillé.',
+    modelUnavailable: 'SmolLM2-360M-Instruct · Apache-2.0',
     modelLoaded: 'Modèle prêt sur cet appareil',
     conditions: { dry_sunny: 'Ensoleillé', dry_overcast: 'Couvert', light_rain: 'Bruine', heavy_rain: 'Forte pluie', snow_frost_ice: 'Gel / verglas', thunderstorm: 'Orage' },
     groups: { Bird: 'Oiseau', Plant: 'Plante', Mammal: 'Mammifère', Invertebrate: 'Invertébré', Fungi: 'Champignon', Herpetofauna: 'Reptile / amphibien', Other: 'Autre faune' },
@@ -301,10 +327,13 @@ function App() {
   const [dataPackError, setDataPackError] = useState('');
   const [mission, setMission] = useState<Mission | null>(null);
   const [briefing, setBriefing] = useState('');
+  const [modelComposition, setModelComposition] = useState<ModelMissionComposition | null>(null);
   const [modelManifest, setModelManifest] = useState<LocalModelManifest | null>(null);
   const [modelProgress, setModelProgress] = useState<ModelProgress | null>(null);
   const [modelBusy, setModelBusy] = useState(false);
   const [modelError, setModelError] = useState('');
+  const [modelUsed, setModelUsed] = useState(false);
+  const modelGeneration = useRef(0);
   const [notes, setNotes] = useState<CheckIn[]>([]);
   const [pace, setPace] = useState(75);
   const [walkFraction, setWalkFraction] = useState(0.6);
@@ -463,29 +492,41 @@ function App() {
     );
     setMission(plan);
     setBriefing(templateBriefing(plan, language, formatDistance(plan.distanceKm, language), cardinalDirection(plan.bearing, language)));
+    setModelComposition(null);
     setModelError('');
+    setModelUsed(false);
+    setModelProgress(null);
+    setModelBusy(false);
+    modelGeneration.current += 1;
     setPage('mission');
   }
 
-  async function runLocalRewrite() {
-    if (!mission) return;
+  async function runModelExperiment(plan: Mission | null = mission) {
+    if (!plan) return;
+    const generation = ++modelGeneration.current;
     setModelBusy(true);
     setModelError('');
-    setModelProgress({ text: 'Preparing the optional local model…', progress: 0 });
+    setModelUsed(false);
+    setModelComposition(language === 'en' ? templateMissionComposition(plan) : null);
+    setModelProgress({ text: t.modelWorking, progress: 0 });
     try {
-      const result = await rewriteMissionBriefing(
-        mission,
-        formatDistance(mission.distanceKm, language),
-        cardinalDirection(mission.bearing, language),
+      const result = await composeLocalMission(
+        plan,
         language,
-        setModelProgress,
+        (progress) => {
+          if (generation === modelGeneration.current) setModelProgress(progress);
+        },
       );
+      if (generation !== modelGeneration.current) return;
       setModelManifest(result.manifest);
-      setBriefing(result.text);
+      setModelComposition(result.composition);
+      setModelUsed(true);
     } catch (error) {
-      setModelError(error instanceof Error ? error.message : 'The local rewrite failed. The template briefing is still available.');
+      if (generation === modelGeneration.current) {
+        setModelError(error instanceof Error ? error.message : 'The local rewrite failed. The template briefing is still available.');
+      }
     } finally {
-      setModelBusy(false);
+      if (generation === modelGeneration.current) setModelBusy(false);
     }
   }
 
@@ -644,9 +685,23 @@ function App() {
               <div className="route-stamp"><Compass size={21} /><span>{mission.distanceKm > 0 ? `${formatDistance(mission.distanceKm, language)} · ${t.oneWay}` : t.nearby}</span><strong>{direction}</strong></div>
             </div>
             <article className="briefing-card">
-              <div className="briefing-heading"><div><span className="eyebrow">{t.briefing}</span><p>{t.template}</p></div><span className="briefing-flower">✿</span></div>
-              <p className="briefing-copy">{briefing}</p>
-              {modelManifest?.enabled && mission.distanceKm > 0 && <button className="text-button briefing-action" onClick={runLocalRewrite} disabled={modelBusy}><RefreshCw size={14} />{modelBusy && modelProgress ? `${modelProgress.text} ${Math.round(modelProgress.progress * 100)}%` : t.rewrite}</button>}
+              <div className="briefing-heading"><div><span className="eyebrow">{t.briefing}</span><p>{modelBusy && modelProgress
+                ? `${modelProgress.text} ${Math.round(modelProgress.progress * 100)}%`
+                : modelUsed ? t.modelUsed : modelError ? t.modelFallback : t.template}</p></div><span className="briefing-flower">✿</span></div>
+              {modelComposition
+                ? <div className="generated-mission">
+                    <span className="eyebrow">{t.objective}</span>
+                    <h2>{modelComposition.objective}</h2>
+                    <span className="eyebrow">{t.observations}</span>
+                    <ol>{modelComposition.steps.map((item) => <li key={item.id}>
+                      <strong>{speciesDisplayName(item, 'en').name}</strong>
+                      <span>{item.fieldcraft.en}</span>
+                    </li>)}</ol>
+                    <p><strong>{t.alternative}: {speciesDisplayName(modelComposition.alternative, 'en').name}.</strong> {modelComposition.alternative.fieldcraft.en}</p>
+                    <p className="generated-conduct">{t.putAway}</p>
+                  </div>
+                : <p className="briefing-copy">{briefing}</p>}
+              {language === 'en' && !mission.safety && <button className="text-button briefing-action" onClick={() => void runModelExperiment()} disabled={modelBusy}><RefreshCw size={14} />{modelUsed ? t.retryModel : t.tryModel}</button>}
               {modelError && <p className="model-error" role="status">{modelError}</p>}
             </article>
             <div className="mission-grid">
@@ -730,7 +785,7 @@ function App() {
               <label className="settings-control"><span>{t.language}</span><select value={language} onChange={(event) => setLanguage(event.target.value as Language)}><option value="en">English</option><option value="de">Deutsch</option><option value="fr">Français</option></select></label>
               <label className="settings-control"><span>{t.pace} <small>{pace} m/min</small></span><input type="range" min="40" max="100" value={pace} onChange={(event) => setPace(Number(event.target.value))} /></label>
               <label className="settings-control"><span>{t.fraction} <small>{Math.round(walkFraction * 100)}%</small></span><input type="range" min="30" max="80" value={Math.round(walkFraction * 100)} onChange={(event) => setWalkFraction(Number(event.target.value) / 100)} /></label>
-              <div className="model-setting"><div className="model-icon">✨</div><div><strong>{t.model}</strong><p>{modelManifest?.enabled ? `${formatBytes(modelManifest.modelSizeBytes ?? 0)} · revision ${modelManifest.revision?.slice(0, 8)} · SHA-256 pinned.` : t.modelUnavailable} {t.modelAdvice}</p></div><span className="soon-pill">OPTIONAL</span></div>
+              <div className="model-setting"><div className="model-icon">✨</div><div><strong>{t.model}</strong><p>{modelManifest?.enabled ? `${formatBytes(modelManifest.modelSizeBytes ?? 0)} · ${t.modelUnavailable} · revision ${modelManifest.revision?.slice(0, 8)} · SHA-256 pinned.` : t.modelUnavailable} {t.modelAdvice}</p></div><span className="soon-pill">ON-DEVICE</span></div>
               {modelProgress && <p className="model-progress">{modelProgress.text} · {Math.round(modelProgress.progress * 100)}%</p>}
               {modelError && <p className="model-error" role="status">{modelError}</p>}
               {modelManifest?.enabled
