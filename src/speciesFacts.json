@@ -5,9 +5,9 @@
     "fr": "L’ortie dioïque nourrit les chenilles de plusieurs papillons, dont le paon-du-jour et la petite tortue."
   },
   "Coccinella septempunctata": {
-    "en": "The bright red of a seven-spot ladybird is a warning to predators: it tastes bad.",
-    "de": "Das leuchtende Rot des Siebenpunkt-Marienkäfers warnt Fressfeinde: Er schmeckt schlecht.",
-    "fr": "Le rouge vif de la coccinelle à sept points est un avertissement pour les prédateurs : elle a mauvais goût."
+    "en": "The bright red colour of the seven-spot ladybird is a warning signal to predators; it can release a foul-tasting defensive fluid.",
+    "de": "Die leuchtend rote Farbe des Siebenpunkt-Marienkäfers ist ein Warnsignal für Fressfeinde; er kann eine übel schmeckende Abwehrflüssigkeit abgeben.",
+    "fr": "La couleur rouge vif de la coccinelle à sept points avertit les prédateurs ; elle peut libérer un liquide défensif au goût désagréable."
   },
   "Adalia bipunctata": {
     "en": "The two-spot ladybird also comes in a black form with red spots.",
@@ -25,9 +25,9 @@
     "fr": "Ce minuscule champignon vit sur l’extérieur des coccinelles arlequin."
   },
   "Issus coleoptratus": {
-    "en": "The young of this planthopper have interlocking gears on their hind legs, the first gears ever found in nature. They keep both legs jumping in sync.",
-    "de": "Die Jungtiere dieser Zikade haben ineinandergreifende Zahnräder an den Hinterbeinen, die ersten in der Natur entdeckten Zahnräder. So springen beide Beine im Gleichtakt.",
-    "fr": "Les jeunes de cet insecte sauteur ont des engrenages sur les pattes arrière, les premiers jamais découverts dans la nature. Ils synchronisent ainsi leurs sauts."
+    "en": "Nymphs of this planthopper have interlocking, gear-like structures on their hind legs that help synchronise the legs during jumps.",
+    "de": "Die Nymphen dieser Käferzikade haben ineinandergreifende, zahnradähnliche Strukturen an den Hinterbeinen, die ihre Beine beim Springen synchronisieren.",
+    "fr": "Les nymphes de cette cicadelle possèdent des structures semblables à des engrenages sur les pattes arrière, qui synchronisent leurs mouvements lors des sauts."
   },
   "Pyrrhocoris apterus": {
     "en": "Firebugs often gather in big groups, especially around linden trees.",
@@ -55,9 +55,9 @@
     "fr": "La punaise diabolique est originaire d’Asie de l’Est et s’est répandue en Europe."
   },
   "Cameraria ohridella": {
-    "en": "The horse-chestnut leaf miner is named after Lake Ohrid, where it was first described in the 1980s.",
-    "de": "Die Rosskastanien-Miniermotte ist nach dem Ohridsee benannt, wo sie in den 1980er-Jahren erstmals beschrieben wurde.",
-    "fr": "La mineuse du marronnier doit son nom au lac d’Ohrid, où elle a été décrite pour la première fois dans les années 1980."
+    "en": "The horse-chestnut leaf miner is a small moth whose caterpillars feed inside horse-chestnut leaves, creating pale or brown mines.",
+    "de": "Die Rosskastanienminiermotte ist ein kleiner Falter, dessen Raupen im Inneren von Rosskastanienblättern fressen und helle oder braune Miniergänge bilden.",
+    "fr": "La mineuse du marronnier est un petit papillon dont les chenilles se nourrissent à l’intérieur des feuilles de marronnier et y creusent des mines claires ou brunes."
   },
   "Cydalima perspectalis": {
     "en": "The box tree moth comes from East Asia. Its caterpillars feed on box.",
@@ -80,9 +80,9 @@
     "fr": "Les abeilles domestiques se disent où sont les fleurs grâce à la danse frétillante."
   },
   "Vespa crabro": {
-    "en": "European hornets are active at dusk and even at night, and are often calmer than their reputation.",
-    "de": "Hornissen sind in der Dämmerung und sogar nachts aktiv und oft friedlicher, als ihr Ruf vermuten lässt.",
-    "fr": "Les frelons européens sont actifs au crépuscule, voire la nuit, et souvent plus calmes que leur réputation."
+    "en": "European hornets are often active at dusk and may also fly at night.",
+    "de": "Europäische Hornissen sind häufig in der Dämmerung aktiv und können auch nachts fliegen.",
+    "fr": "Le frelon européen est souvent actif au crépuscule et peut aussi voler la nuit."
   },
   "Episyrphus balteatus": {
     "en": "The marmalade hoverfly looks like a wasp but cannot sting. Its larvae eat aphids.",
@@ -125,14 +125,14 @@
     "fr": "Les corneilles mantelées sont proches des corneilles noires, et les deux s’hybrident là où leurs aires se rencontrent."
   },
   "Sciurus vulgaris": {
-    "en": "Red squirrels bury nuts and forget some of them, which can grow into new trees.",
-    "de": "Eichhörnchen vergraben Nüsse und vergessen manche davon, aus denen neue Bäume wachsen können.",
-    "fr": "Les écureuils roux enterrent des noix et en oublient certaines, qui peuvent devenir de nouveaux arbres."
+    "en": "Red squirrels bury or hide nuts and seeds; some caches are never recovered, allowing seeds to germinate.",
+    "de": "Eichhörnchen vergraben oder verstecken Nüsse und Samen. Manche Vorräte werden nicht wiedergefunden, sodass Samen keimen können.",
+    "fr": "Les écureuils roux enterrent ou cachent des noix et des graines. Certaines réserves ne sont jamais retrouvées, ce qui permet aux graines de germer."
   },
   "Turdus merula": {
-    "en": "Only the male blackbird is black. The female is brown.",
-    "de": "Nur das Amselmännchen ist schwarz. Das Weibchen ist braun.",
-    "fr": "Seul le merle mâle est noir. La femelle est brune."
+    "en": "Adult male blackbirds are black with a yellow-orange bill; females are usually brown, and young males are brown before their adult plumage develops.",
+    "de": "Ausgewachsene Amselmännchen sind schwarz und haben einen gelb-orangen Schnabel; Weibchen sind meist braun, und junge Männchen sind vor dem Erwachsenengefieder ebenfalls braun.",
+    "fr": "Les merles noirs adultes sont noirs avec un bec jaune-orangé ; les femelles sont généralement brunes, et les jeunes mâles sont eux aussi bruns avant d’acquérir leur plumage adulte."
   },
   "Erithacus rubecula": {
     "en": "Robins defend their territory even in winter, so you can hear them sing in the cold months.",
@@ -140,9 +140,9 @@
     "fr": "Les rouges-gorges défendent leur territoire même en hiver, on les entend donc chanter en saison froide."
   },
   "Cyanistes caeruleus": {
-    "en": "Blue tits can see ultraviolet light, and their blue crown glows in it.",
-    "de": "Blaumeisen sehen ultraviolettes Licht, und ihr blauer Scheitel leuchtet darin.",
-    "fr": "Les mésanges bleues voient les ultraviolets, et leur calotte bleue y brille."
+    "en": "Blue tits can see ultraviolet light, and parts of their plumage reflect ultraviolet wavelengths.",
+    "de": "Blaumeisen können ultraviolettes Licht sehen; Teile ihres Gefieders reflektieren ultraviolette Wellenlängen.",
+    "fr": "Les mésanges bleues voient les ultraviolets, et certaines parties de leur plumage réfléchissent les longueurs d’onde ultraviolettes."
   },
   "Parus major": {
     "en": "Great tits have a surprisingly large repertoire of songs and calls.",
@@ -150,9 +150,9 @@
     "fr": "Les mésanges charbonnières ont un répertoire de chants et de cris étonnamment large."
   },
   "Dendrocopos major": {
-    "en": "The great spotted woodpecker drums on dead wood to announce its territory.",
-    "de": "Der Buntspecht trommelt auf Totholz, um sein Revier anzukündigen.",
-    "fr": "Le pic épeiche tambourine sur le bois mort pour annoncer son territoire."
+    "en": "Great spotted woodpeckers drum rapidly on resonant surfaces, often dead branches or trunks, to signal their presence and territory.",
+    "de": "Buntspechte trommeln schnell auf resonanten Oberflächen, oft auf abgestorbenen Ästen oder Stämmen, um ihre Anwesenheit und ihr Revier zu signalisieren.",
+    "fr": "Les pics épeiches tambourinent rapidement sur des surfaces résonantes, souvent des branches ou des troncs morts, pour signaler leur présence et leur territoire."
   },
   "Luscinia megarhynchos": {
     "en": "Nightingales sing at night as well as by day. The English name means “night singer”.",
@@ -175,9 +175,9 @@
     "fr": "Les cygnes tuberculés ne sont pas vraiment muets : ils sifflent et soufflent. Leurs petits naissent gris et ne blanchissent que peu à peu."
   },
   "Anas platyrhynchos": {
-    "en": "Only female mallards quack loudly. Males make softer, rasping sounds.",
-    "de": "Nur Stockenten-Weibchen quaken laut. Die Männchen machen leisere, raue Laute.",
-    "fr": "Seules les femelles colvert cancanent fort. Les mâles font des sons plus doux et rauques."
+    "en": "The familiar loud quack is most strongly associated with female mallards; males usually make quieter, raspier calls.",
+    "de": "Der bekannte laute Ruf ist vor allem für weibliche Stockenten typisch; Männchen geben meist leisere, rauere Laute von sich.",
+    "fr": "Le célèbre « coin-coin » sonore est surtout associé aux femelles colverts ; les mâles émettent généralement des sons plus discrets et plus rauques."
   },
   "Fulica atra": {
     "en": "Coots have lobed toes instead of webbed feet.",
@@ -205,9 +205,9 @@
     "fr": "Les pigeons nourrissent leurs petits avec du « lait de jabot », un liquide nourrissant qu’ils fabriquent eux-mêmes."
   },
   "Vulpes vulpes": {
-    "en": "Red foxes have vertical slit pupils, like a cat’s, and live in the middle of Berlin.",
-    "de": "Rotfüchse haben senkrechte Schlitzpupillen wie Katzen und leben mitten in Berlin.",
-    "fr": "Les renards roux ont des pupilles verticales, comme les chats, et vivent en plein Berlin."
+    "en": "Red foxes are adaptable mammals that live in both rural areas and cities, including Berlin.",
+    "de": "Rotfüchse sind anpassungsfähige Säugetiere, die sowohl auf dem Land als auch in Städten wie Berlin leben.",
+    "fr": "Le renard roux est un mammifère adaptable qui vit aussi bien à la campagne que dans les villes, y compris à Berlin."
   },
   "Lissotriton vulgaris": {
     "en": "Newts can regrow lost limbs.",
@@ -215,9 +215,9 @@
     "fr": "Les tritons peuvent faire repousser un membre perdu."
   },
   "Cornus sanguinea": {
-    "en": "The twigs of red dogwood turn red in winter, which makes it easy to spot.",
-    "de": "Die Zweige des Roten Hartriegels färben sich im Winter rot und sind dann leicht zu erkennen.",
-    "fr": "Les rameaux du cornouiller sanguin rougissent en hiver, ce qui le rend facile à repérer."
+    "en": "The young twigs of common dogwood often turn red, especially in winter.",
+    "de": "Die jungen Zweige des Roten Hartriegels färben sich häufig rot, besonders im Winter.",
+    "fr": "Les jeunes rameaux du cornouiller sanguin deviennent souvent rouges, surtout en hiver."
   },
   "Sambucus nigra": {
     "en": "Elderflowers are used to make a fragrant syrup.",
@@ -235,9 +235,9 @@
     "fr": "Le lierre fleurit tard à l’automne, quand peu d’autres plantes le font, et nourrit abeilles et autres insectes."
   },
   "Taxus baccata": {
-    "en": "Yews can live for many hundreds of years. Almost every part is poisonous except the red fleshy aril around the seed.",
-    "de": "Eiben können viele hundert Jahre alt werden. Fast alles an ihnen ist giftig, außer dem roten Fruchtfleisch um den Samen.",
-    "fr": "Les ifs peuvent vivre plusieurs siècles. Presque tout est toxique, sauf la chair rouge qui entoure la graine."
+    "en": "Yews can live for centuries. Most parts of the plant, including the seed, are poisonous; the red fleshy aril surrounding the seed is generally not poisonous. Never eat yew seeds or other parts of the plant.",
+    "de": "Eiben können Jahrhunderte alt werden. Die meisten Pflanzenteile, einschließlich des Samens, sind giftig; der rote, fleischige Samenmantel gilt im Allgemeinen als ungiftig. Eibensamen oder andere Pflanzenteile niemals essen.",
+    "fr": "Les ifs peuvent vivre plusieurs siècles. La plupart des parties de la plante, y compris la graine, sont toxiques ; l’arille rouge et charnu qui entoure la graine est généralement considéré comme non toxique. Ne mangez jamais les graines ni d’autres parties de l’if."
   },
   "Fagus sylvatica": {
     "en": "Beech trees have thin, smooth grey bark and can live for two to three hundred years.",
@@ -245,9 +245,9 @@
     "fr": "Les hêtres ont une écorce fine, lisse et grise et peuvent vivre deux à trois siècles."
   },
   "Carpinus betulus": {
-    "en": "Hornbeam wood is among the hardest in Europe.",
-    "de": "Hainbuchenholz gehört zu den härtesten in Europa.",
-    "fr": "Le bois de charme est parmi les plus durs d’Europe."
+    "en": "Hornbeam has very hard, dense wood.",
+    "de": "Die Hainbuche hat sehr hartes, dichtes Holz.",
+    "fr": "Le charme commun possède un bois très dur et dense."
   },
   "Acer pseudoplatanus": {
     "en": "Maple seeds have wings and spin like tiny helicopters as they fall.",
@@ -260,9 +260,9 @@
     "fr": "Le robinier vient d’Amérique du Nord, et le « miel d’acacia » est en réalité fait avec ses fleurs."
   },
   "Bellis perennis": {
-    "en": "The English name daisy comes from “day’s eye”: the flower opens in the morning and closes at night.",
-    "de": "Das Gänseblümchen öffnet sich morgens und schließt sich abends. Im Englischen heißt es „daisy“, von „day’s eye“, Tagesauge.",
-    "fr": "La pâquerette s’ouvre le matin et se ferme le soir. En anglais, « daisy » vient de « day’s eye », l’œil du jour."
+    "en": "The English word “daisy” comes from an Old English expression meaning “day’s eye”, referring to the flower opening in daylight and closing at night or in poor light.",
+    "de": "Le mot anglais « daisy » vient d’une ancienne expression anglaise signifiant « œil du jour », en référence à la fleur qui s’ouvre à la lumière et se ferme la nuit ou lorsque la lumière manque.",
+    "fr": "Le mot anglais « daisy » vient d’une ancienne expression anglaise signifiant « œil du jour », en référence à la fleur qui s’ouvre à la lumière et se ferme la nuit ou lorsque la lumière manque."
   },
   "Chelidonium majus": {
     "en": "Greater celandine has bright orange sap, and ants help spread its seeds.",
@@ -275,14 +275,14 @@
     "fr": "L’alliaire officinale sent l’ail quand on froisse une feuille."
   },
   "Glechoma hederacea": {
-    "en": "Ground ivy was used to flavour beer long before hops took over.",
-    "de": "Gundermann wurde zum Würzen von Bier verwendet, lange bevor der Hopfen sich durchsetzte.",
-    "fr": "Le lierre terrestre servait à aromatiser la bière bien avant le houblon."
+    "en": "Ground ivy is a low-growing plant with rounded, scalloped leaves and small, usually purple, flowers.",
+    "de": "Gundermann ist eine niedrig wachsende Pflanze mit rundlichen, gekerbten Blättern und kleinen, meist violetten Blüten.",
+    "fr": "Le lierre terrestre est une plante rampante aux feuilles arrondies et crénelées et aux petites fleurs généralement violettes."
   },
   "Humulus lupulus": {
-    "en": "Hop is a close relative of hemp, and its shoots twine clockwise around their support.",
-    "de": "Hopfen ist ein naher Verwandter des Hanfs, und seine Triebe winden sich im Uhrzeigersinn um ihre Stütze.",
-    "fr": "Le houblon est un proche cousin du chanvre, et ses tiges s’enroulent dans le sens des aiguilles d’une montre."
+    "en": "Hop is a close relative of hemp. Its climbing stems twine around supports; the direction of twining is consistent for the species.",
+    "de": "Hopfen ist eng mit Hanf verwandt. Seine Klettertriebe winden sich um Stützen; die Windungsrichtung ist für die Art charakteristisch.",
+    "fr": "Le houblon est un proche parent du chanvre. Ses tiges grimpantes s’enroulent autour de supports, dans une direction caractéristique de l’espèce."
   },
   "Ficaria verna": {
     "en": "Lesser celandine is one of the first spring flowers, and its blooms close in dull weather.",
@@ -295,9 +295,9 @@
     "fr": "L’éranthe d’hiver fleurit à la fin de l’hiver, parfois à travers la neige."
   },
   "Achillea millefolium": {
-    "en": "Yarrow is named after Achilles, who in legend used it to treat soldiers’ wounds.",
-    "de": "Die Schafgarbe ist nach Achilles benannt, der der Sage nach damit Wunden von Soldaten behandelte.",
-    "fr": "L’achillée millefeuille doit son nom à Achille, qui, selon la légende, soignait ainsi les blessures de ses soldats."
+    "en": "The genus name Achillea refers to Achilles, the legendary Greek hero who was said to have used the plant to treat wounds.",
+    "de": "Der Gattungsname Achillea bezieht sich auf Achilles, den legendären griechischen Helden, der die Pflanze der Überlieferung nach zur Wundbehandlung verwendete.",
+    "fr": "Le nom de genre Achillea fait référence à Achille, le héros légendaire grec qui, selon la tradition, aurait utilisé cette plante pour soigner des blessures."
   },
   "Tanacetum vulgare": {
     "en": "Tansy smells strongly of camphor when you crush its leaves.",
@@ -310,9 +310,9 @@
     "fr": "Les fleurs de la vipérine passent du rose au bleu en s’ouvrant."
   },
   "Saponaria officinalis": {
-    "en": "Crush soapwort leaves in water and they make a soapy lather.",
-    "de": "Zerreibt man Seifenkraut in Wasser, entsteht ein seifiger Schaum.",
-    "fr": "Les feuilles de saponaire froissées dans l’eau font une mousse savonneuse."
+    "en": "Soapwort contains saponins, which can create a lather when parts of the plant—especially the roots—are agitated in water.",
+    "de": "Echtes Seifenkraut enthält Saponine, die beim Bewegen von Pflanzenteilen – besonders der Wurzeln – in Wasser Schaum bilden können.",
+    "fr": "La saponaire officinale contient des saponines qui peuvent former de la mousse lorsqu’on agite dans l’eau des parties de la plante, en particulier les racines."
   },
   "Erodium cicutarium": {
     "en": "The seeds of common stork’s-bill twist and drill themselves into the soil as they dry and get wet.",
@@ -320,9 +320,9 @@
     "fr": "Les graines de l’érodium à feuilles de ciguë se tordent en séchant et s’humidifiant et se vissent dans le sol."
   },
   "Sedum acre": {
-    "en": "Biting stonecrop stores water in its leaves and tastes peppery.",
-    "de": "Der Scharfe Mauerpfeffer speichert Wasser in seinen Blättern und schmeckt pfeffrig.",
-    "fr": "L’orpin âcre stocke l’eau dans ses feuilles et a un goût poivré."
+    "en": "Biting stonecrop is a low-growing succulent that stores water in its fleshy leaves. Do not taste wild plants.",
+    "de": "Der Scharfe Mauerpfeffer ist eine niedrig wachsende Sukkulente, die Wasser in ihren fleischigen Blättern speichert. Wildpflanzen nicht probieren.",
+    "fr": "L’orpin âcre est une plante succulente rampante qui stocke l’eau dans ses feuilles charnues. Ne goûtez pas les plantes sauvages."
   },
   "Geum urbanum": {
     "en": "The roots of wood avens smell of cloves.",
@@ -335,9 +335,9 @@
     "fr": "Les fruits de la capselle bourse-à-pasteur ont la forme de petites bourses."
   },
   "Cichorium intybus": {
-    "en": "Chicory flowers open in the morning and close by midday. Its roasted root has been used as a coffee substitute.",
-    "de": "Die Blüten der Wegwarte öffnen sich morgens und schließen sich gegen Mittag. Ihre geröstete Wurzel diente als Kaffeeersatz.",
-    "fr": "Les fleurs de chicorée s’ouvrent le matin et se ferment vers midi. Sa racine torréfiée a servi de succédané de café."
+    "en": "Chicory flowers commonly open in daylight and may close later in the day. The roasted root has been used as a coffee substitute.",
+    "de": "Wegwartenblüten öffnen sich gewöhnlich bei Tageslicht und können sich später am Tag wieder schließen. Die geröstete Wurzel wurde als Kaffeeersatz verwendet.",
+    "fr": "Les fleurs de chicorée s’ouvrent généralement à la lumière du jour et peuvent se refermer plus tard. Sa racine torréfiée a été utilisée comme substitut du café."
   },
   "Hypericum perforatum": {
     "en": "Hold a St John’s wort leaf up to the light: the tiny see-through dots are oil glands.",
@@ -350,9 +350,9 @@
     "fr": "L’arabette des dames a été la première plante dont le génome complet a été séquencé, en 2000."
   },
   "Lunaria annua": {
-    "en": "Honesty has papery, silvery seed pods shaped like little moons.",
-    "de": "Das Silberblatt hat papierartige, silbrige Schoten in der Form kleiner Monde.",
-    "fr": "La lunaire annuelle a des fruits papyracés et argentés en forme de petites lunes."
+    "en": "After the seed pods dry and their outer walls fall away, honesty has flat, silvery, moon-shaped partitions.",
+    "de": "Wenn die Schoten trocknen und ihre Außenwände abfallen, bleiben bei der Silberblättrigen Mondviole flache, silbrige, mondförmige Trennwände zurück.",
+    "fr": "Lorsque les siliques sèchent et que leurs parois extérieures tombent, la monnaie-du-pape laisse apparaître des cloisons plates, argentées et en forme de lune."
   },
   "Euonymus europaeus": {
     "en": "Spindle has pink fruits that split open to show bright orange seeds.",
@@ -365,9 +365,9 @@
     "fr": "La clématite des haies forme à l’automne des touffes argentées et duveteuses, d’où son nom anglais « barbe du vieillard »."
   },
   "Chenopodium album": {
-    "en": "The young leaves of fat hen are edible.",
-    "de": "Die jungen Blätter des Weißen Gänsefußes sind essbar.",
-    "fr": "Les jeunes feuilles du chénopode blanc sont comestibles."
+    "en": "Fat hen is a widespread annual plant with mealy-looking young leaves. Although it has been eaten as a leafy vegetable, do not forage or eat wild plants unless identification and safety are certain.",
+    "de": "Weißer Gänsefuß ist eine weit verbreitete einjährige Pflanze mit mehlig wirkenden jungen Blättern. Er wurde als Blattgemüse gegessen; Wildpflanzen sollte man jedoch nur sammeln oder essen, wenn Bestimmung und Sicherheit eindeutig geklärt sind.",
+    "fr": "Le chénopode blanc est une plante annuelle répandue dont les jeunes feuilles ont un aspect farineux. Il a été consommé comme légume-feuille, mais ne cueillez ni ne mangez de plantes sauvages sans identification et sécurité certaines."
   },
   "Galium aparine": {
     "en": "Cleavers is covered in tiny hooks, so it sticks to clothes and fur.",
@@ -400,9 +400,9 @@
     "fr": "Les pétales du mouron des oiseaux sont si profondément fendus que chaque fleur semble en avoir dix au lieu de cinq."
   },
   "Claytonia perfoliata": {
-    "en": "Miner’s lettuce is edible. Gold miners in California ate it, hence the name.",
-    "de": "Das Tellerkraut ist essbar. Goldgräber in Kalifornien aßen es, daher der englische Name „miner’s lettuce“.",
-    "fr": "La claytonie perfoliée est comestible. Les chercheurs d’or californiens en mangeaient, d’où son nom anglais « laitue du mineur »."
+    "en": "Miner’s lettuce is an edible plant historically eaten by people during the California Gold Rush. Wild plants should only be eaten when correctly identified and growing in a safe location.",
+    "de": "Winterportulak ist essbar und wurde historisch während des kalifornischen Goldrauschs gegessen. Wildpflanzen sollte man nur essen, wenn sie sicher bestimmt wurden und an einem unbelasteten Ort wachsen.",
+    "fr": "La claytone de Cuba est comestible et a été consommée historiquement pendant la ruée vers l’or en Californie. Ne mangez des plantes sauvages que si leur identification est certaine et si le lieu est sûr."
   },
   "Aegopodium podagraria": {
     "en": "Ground elder is also called goutweed because it was once used against gout.",
@@ -420,9 +420,9 @@
     "fr": "Cette mousse peut se dessécher complètement et reprendre vie à la pluie."
   },
   "Xanthoria parietina": {
-    "en": "A lichen is a fungus and an alga living together. This one’s orange colour helps protect it from sunlight.",
-    "de": "Eine Flechte ist ein Pilz und eine Alge, die zusammenleben. Die orange Farbe dieser Flechte schützt sie vor Sonnenlicht.",
-    "fr": "Un lichen est un champignon et une algue qui vivent ensemble. La couleur orange de celui-ci le protège du soleil."
+    "en": "Lichens are partnerships between a fungus and a photosynthetic partner, usually a green alga or cyanobacterium. The orange pigment in this species helps protect it from strong light.",
+    "de": "Flechten sind Lebensgemeinschaften aus einem Pilz und einem photosynthetisch aktiven Partner, meist einer Grünalge oder einem Cyanobakterium. Der orange Farbstoff dieser Art hilft, sie vor starkem Licht zu schützen.",
+    "fr": "Les lichens sont des associations entre un champignon et un partenaire photosynthétique, généralement une algue verte ou une cyanobactérie. Le pigment orange de cette espèce contribue à la protéger d’une lumière intense."
   },
   "Evernia prunastri": {
     "en": "Oakmoss is a lichen that is used in perfume.",
