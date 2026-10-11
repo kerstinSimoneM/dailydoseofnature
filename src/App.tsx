@@ -6,7 +6,9 @@ import {
 } from 'lucide-react';
 import { buildMission, cardinalDirection, formatDistance, type Coordinates, type Mission } from './engine';
 import { anchors, pickerCells, species, speciesDisplayName, weatherOptions, type Anchor, type Language, type Species, type Weather } from './data';
+import { createPortal } from 'react-dom';
 import speciesImageCredits from './speciesImageCredits.json';
+import speciesFacts from './speciesFacts.json';
 import { loadNaturePack, type NaturePack } from './dataPack';
 import { LocationRequestError, requestDeviceLocation } from './geolocation';
 import { currentForecastHour, currentForecastWeather, forecastAgeLabel, getBerlinForecast, outingWeather, type ForecastResult } from './weather';
@@ -31,7 +33,7 @@ const copy = {
     locationFooter: 'App code does not send or save location',
     mission: 'Your nature note', back: 'Change my plan', today: 'TODAY’S LITTLE ADVENTURE',
     head: 'A green little detour', walk: 'est. round-trip walk', observe: 'noticing', oneWay: 'straight-line, one way', nearby: 'nearby', away: 'away', route: 'Your destination',
-    targets: 'Keep an eye out for', gems: 'Little treasures', fieldcraft: 'A tiny field tip',
+    targets: 'Keep an eye out for', gems: 'Little treasures', fieldcraft: 'A tiny field tip', didYouKnow: 'Did you know?', enlargePhoto: 'Enlarge photo', closePhoto: 'Close photo',
     safety: 'A gentle safety note', conduct: 'Stay on paths, keep your distance, take nothing, and follow signs in nature reserves.',
     save: 'I spotted this', saved: 'Added to my field notes', checklist: 'Field notes', empty: 'Nothing spotted yet. The first little discovery is yours.',
     notes: 'sightings', clear: 'Clear notes', export: 'Export notes', about: 'About this little app', settings: 'Settings',
@@ -110,7 +112,7 @@ const copy = {
     locationFooter: 'Die App sendet oder speichert den Standort nicht',
     mission: 'Deine Natur-Notiz', back: 'Plan ändern', today: 'DEIN KLEINES ABENTEUER',
     head: 'Ein grüner kleiner Umweg', walk: 'geschätzter Hin- und Rückweg', observe: 'Entdecken', oneWay: 'Luftlinie, einfache Strecke', nearby: 'in der Nähe', away: 'entfernt', route: 'Dein Ziel',
-    targets: 'Halte Ausschau nach', gems: 'Kleine Schätze', fieldcraft: 'Ein kleiner Beobachtungstipp',
+    targets: 'Halte Ausschau nach', gems: 'Kleine Schätze', fieldcraft: 'Ein kleiner Beobachtungstipp', didYouKnow: 'Schon gewusst?', enlargePhoto: 'Foto vergrößern', closePhoto: 'Foto schließen',
     safety: 'Ein sanfter Sicherheitshinweis', conduct: 'Bleib auf den Wegen, halte Abstand, nimm nichts mit und beachte die Schilder im Naturschutzgebiet.',
     save: 'Habe ich entdeckt', saved: 'In deinen Notizen gespeichert', checklist: 'Natur-Notizen', empty: 'Noch nichts entdeckt. Die erste kleine Entdeckung wartet auf dich.',
     notes: 'Funde', clear: 'Notizen löschen', export: 'Notizen exportieren', about: 'Über diese kleine App', settings: 'Einstellungen',
@@ -189,7 +191,7 @@ const copy = {
     locationFooter: 'L’appli n’envoie ni n’enregistre ta position',
     mission: 'Ta note nature', back: 'Modifier mon programme', today: 'TA PETITE AVENTURE DU JOUR',
     head: 'Un petit détour tout vert', walk: 'aller-retour estimé à pied', observe: 'observation', oneWay: 'à vol d’oiseau, aller simple', nearby: 'à proximité', away: 'à pied', route: 'Ta destination',
-    targets: 'Ouvre l’œil pour', gems: 'Petits trésors', fieldcraft: 'Un mini-conseil de terrain',
+    targets: 'Ouvre l’œil pour', gems: 'Petits trésors', fieldcraft: 'Un mini-conseil de terrain', didYouKnow: 'Le savais-tu ?', enlargePhoto: 'Agrandir la photo', closePhoto: 'Fermer la photo',
     safety: 'Un petit rappel de sécurité', conduct: 'Reste sur les sentiers, garde tes distances, ne prends rien et respecte les panneaux des réserves.',
     save: 'Je l’ai aperçu', saved: 'Ajouté à tes notes', checklist: 'Notes de terrain', empty: 'Rien aperçu pour le moment. Ta première découverte t’attend.',
     notes: 'observations', clear: 'Effacer les notes', export: 'Exporter les notes', about: 'À propos de cette appli', settings: 'Réglages',
@@ -287,8 +289,51 @@ function photoCreditFor(item: Species) {
     : undefined;
 }
 
-function SpeciesArt({ item, small = false }: { item: Species; small?: boolean }) {
+function factFor(item: Species, language: Language) {
+  const entry = item.scientific_name
+    ? (speciesFacts as Record<string, Partial<Record<Language, string>>>)[item.scientific_name]
+    : undefined;
+  return entry?.[language] ?? entry?.en;
+}
+
+function PhotoLightbox({ item, language, t, onClose }: {
+  item: Species; language: Language; t: (typeof copy)[Language]; onClose: () => void;
+}) {
   const image = photoCreditFor(item);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    closeRef.current?.focus();
+    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+  if (!image) return null;
+  const name = speciesDisplayName(item, language).name;
+  return createPortal(
+    <div className="lightbox" role="dialog" aria-modal="true" aria-label={name} onClick={onClose}>
+      <figure className="lightbox-figure" onClick={(event) => event.stopPropagation()}>
+        <img src={image.image} alt={name} />
+        <figcaption>
+          <strong>{name}</strong>
+          {item.scientific_name && item.scientific_name !== name ? <em> {item.scientific_name}</em> : null}
+          <small>
+            {image.attribution}{' · '}
+            {image.licenseUrl
+              ? <a href={image.licenseUrl} target="_blank" rel="noreferrer">{image.license}</a>
+              : image.license}
+          </small>
+        </figcaption>
+        <button ref={closeRef} className="lightbox-close" onClick={onClose} aria-label={t.closePhoto}><X size={18} /></button>
+      </figure>
+    </div>,
+    document.body,
+  );
+}
+
+function SpeciesArt({ item, small = false, language = 'en', t }: { item: Species; small?: boolean; language?: Language; t?: (typeof copy)[Language] }) {
+  const image = photoCreditFor(item);
+  const [open, setOpen] = useState(false);
+  const zoomable = Boolean(image && t && !small);
   return (
     <div className={`species-art ${small ? 'species-art--small' : ''}`} aria-label={speciesDisplayName(item, 'en').name} role="img">
       <span className="art-sun" />
@@ -296,6 +341,8 @@ function SpeciesArt({ item, small = false }: { item: Species; small?: boolean })
       <span className="art-grass grass-one" />
       <span className="art-grass grass-two" />
       {image && <img className="species-photo" src={image.image} alt="" loading="lazy" decoding="async" onError={(event) => event.currentTarget.remove()} />}
+      {zoomable && <button type="button" className="photo-zoom" onClick={() => setOpen(true)} aria-label={`${t!.enlargePhoto}: ${speciesDisplayName(item, language).name}`} />}
+      {zoomable && open && <PhotoLightbox item={item} language={language} t={t!} onClose={() => setOpen(false)} />}
     </div>
   );
 }
@@ -823,10 +870,11 @@ function SpeciesCard({ item, index, language, onAdd, alreadyAdded, t, gem = fals
   const name = displayName.name;
   const localSupport = nearbyEvidenceCell ? item.cell_rates?.[nearbyEvidenceCell]?.support : undefined;
   const photoCredit = photoCreditFor(item);
+  const fact = factFor(item, language);
   return (
     <article className={`species-card ${gem ? 'gem-card' : ''}`}>
       <div className="species-number">{gem ? <span className="gem-star">✦</span> : `0${index}`}</div>
-      <SpeciesArt item={item} />
+      <SpeciesArt item={item} language={language} t={t} />
       <div className="species-info">
         <span className="species-group">{t.groups[item.group]} <span>·</span> {gem ? t.gems : item.observation_count ? t.observedMonths : t.activity}</span>
         <h3>{name}</h3>
@@ -841,6 +889,7 @@ function SpeciesCard({ item, index, language, onAdd, alreadyAdded, t, gem = fals
           : item.observation_count && <small className="species-evidence">{new Intl.NumberFormat(language).format(item.observation_count)} {t.observationRecords}</small>}
         <p className="fieldcraft-label">{t.fieldcraft}</p>
         <p className="fieldcraft-copy">{item.fieldcraft[language]}</p>
+        {fact && <><p className="fieldcraft-label">{t.didYouKnow}</p><p className="fieldcraft-copy">{fact}</p></>}
         {photoCredit && (
           <small className="photo-credit">
             {photoCredit.attribution}
